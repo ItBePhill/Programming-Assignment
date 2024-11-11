@@ -8,11 +8,11 @@ using namespace std;
 
 /*
 TODO:
-- Research how to read and write to files, probably JSON or maybe an sqlite db for the potato / toppings / extras.
+- Research how to read and write to files, probably JSON or maybe an sqlite db for the potato / toppings / extras
+- Research Constant Variables
 - Finish Add Credits Function
 - Finish Create Order Function
 - Finish View Recent Function
-- 
 */
 
 
