@@ -4,20 +4,22 @@
 
 
 #include <iostream>
+#include <string>
 #include <functional>
-#include <time.h>
 using namespace std;
 
 /*
-TODO:		key: 
-			 // done
+TODO:		Key: 
+			 // fully done
 			 / doing
+			 
 - Research how to read and write to files, probably JSON or maybe an sqlite db
 - Research Constant Variables
 - Finish Add Credits Function /
+	fix too big check 
+	fix letter check
 - Finish Create Order Function
 - Finish View Recent Function
-- Add Sleep to Quit Function
 */
 
 
@@ -48,11 +50,26 @@ void addCredits(std::function<void()> ptr) {
 	double credits = 0;
 
 	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
-	//ask user to input an amount of credits then ask if they're sure and check
+	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
+			
 			cout << endl << "How many credits would you like to add?\n- ";
 			cin >> creditAnswer;
+			//make sure it's not too small
+			//I think this is fine for a magic number as there's now way it's gonna change.
+			if (creditAnswer < 1.0) {
+				cout << endl << "Entry too small";
+				continue;
+			}
+			//make sure it's not too big
+			//gonna change later as this is not very elegant
+			// also magic number = bad
+			else if (creditAnswer > 9999999999999999999) {
+				cout << endl << "Entry too large";
+				continue;
+			}
+			
 			cout << endl << "Are you Sure? (y/n)";
 			cin >> sure;
 			if (sure == "y") {
@@ -65,6 +82,7 @@ void addCredits(std::function<void()> ptr) {
 			else {
 				cout << "Error: Invalid Option";
 			}
+
 			
 		}
 		credits += creditAnswer;
@@ -76,6 +94,7 @@ void addCredits(std::function<void()> ptr) {
 }
 void createOrder(std::function<void()> ptr) {
 	cout << endl << "----Create A New Order-----";
+
 }
 void viewRecent(std::function<void()> ptr) {
 	cout << endl << "----View Recent Orders-----";
@@ -84,9 +103,10 @@ void viewRecent(std::function<void()> ptr) {
 int main() {
 	int welcomeAnswer;
 	bool breakwhile = false;
-	//loop forever until user types answer
+	//loop forever until user types a correct answer answer
+	//Sets breakwhile to true when a correct answer is entered
 	while (!breakwhile) {
-		cout << "----Welcome to Hot Potato!----\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit";
+		cout << "----Welcome to Hot Potato!----\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		cin >> welcomeAnswer;
 
 		//check if answer is valid
@@ -103,13 +123,8 @@ int main() {
 				viewRecent(main);
 				breakwhile = true;
 				break;
-			
 			case 4:
-				cout << "Bye!";
-				cout << "Quitting in...";
-				for (int i = 0; i < 2; i++) {
-					cout << i+1;
-				}
+				cout << endl << "Bye!, Come Back Soon!" << endl;
 				quick_exit(0);
 	
 			default:
