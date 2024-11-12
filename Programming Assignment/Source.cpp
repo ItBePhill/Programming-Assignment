@@ -4,8 +4,6 @@
 #include <map>
 using namespace std;
 
-
-
 /*
 TODO:
 - Research how to read and write to files, probably JSON or maybe an sqlite db for the potato / toppings / extras
@@ -36,12 +34,36 @@ TODO:
 //};
 
 void addCredits() {
-	int creditAnswer;
-	cout << endl << "-----Add Credits-----\nCurrent Credits: ";
-	cout << endl << "";
+	double creditAnswer;
+
+	string sure = "n";
+	double credits = 0;
+	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
+	while (sure != "y") {
+		while (true) {
+			cout << endl << "How many credits would you like to add?\n- ";
+			cin >> creditAnswer;
+			cout << endl << "Are you Sure? (y/n)";
+			cin >> sure;
+			if (sure == "y") {
+				break;
+			}
+			else {
+				sure = "n";
+				continue;
+			}
+		}
+		int ans;
+		cout << endl << "New Amount: " << credits;
+		cout << endl << "Enter Any Key to Return to Menu";
+		cin;
+
+		
+
+	}
+
 }
 void createOrder() {
-	int orderAnswer;
 	cout << endl << "----Create Order-----";
 }
 void viewRecent() {
