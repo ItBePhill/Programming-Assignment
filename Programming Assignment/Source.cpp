@@ -17,7 +17,6 @@ TODO:		Key:
 - Research Constant Variables
 - Finish Add Credits Function /
 	fix too big check 
-	fix letter check
 - Finish Create Order Function
 - Finish View Recent Function
 */
