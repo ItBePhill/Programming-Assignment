@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <functional>
+#include <map>
 using namespace std;
 
 /*
@@ -16,7 +17,7 @@ TODO:		Key:
 - Research how to read and write to files, probably JSON or maybe an sqlite db
 - Research Constant Variables
 - Finish Add Credits Function /
-	fix too big check 
+- Create new Welcome function so the main function is just calling other functions
 - Finish Create Order Function
 - Finish View Recent Function
 */
@@ -41,17 +42,15 @@ TODO:		Key:
 //	double price;
 
 
-// Reference 2
-// Function loops over every character in the string until it reaches a letter and stops and returns false otherwise true.
 
 
 //reference 1 
-void addCredits(std::function<void()> ptr) {
+map<string, string> addCredits(std::function<void()> ptr, map<string, string> User) {
 	// Set Variables
 	string creditAnswerS;
 	double creditAnswerD;
 	string sure = "n";
-	double credits = 0;
+	double credits = 0.0;
 	char* p;
 
 	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
@@ -66,7 +65,7 @@ void addCredits(std::function<void()> ptr) {
 			if (*p) {
 				cout << "Error: NAN";
 				continue;
-			}
+			} 
 			//make sure it's not too small
 			//I think this is fine for a magic number as there's no way it's gonna change.
 			if (creditAnswerD < 1.0) {
@@ -74,7 +73,7 @@ void addCredits(std::function<void()> ptr) {
 				continue;
 			}
 			//make sure it's not too big, this feels wrong but idk
-			else if (creditAnswerD > 999999999999999999) {
+			else if (creditAnswerD > 999999999999999999.0) {
 				cout << endl << "Entry too large";
 				continue;
 			}
@@ -95,8 +94,9 @@ void addCredits(std::function<void()> ptr) {
 			
 		}
 		credits += creditAnswerD;
+		User["credits"] = to_string(credits);
 		cout << endl << "New Amount: " << credits << endl << endl;
-		ptr();
+		return User
 	}
 
 }
@@ -108,11 +108,17 @@ void viewRecent(std::function<void()> ptr) {
 	cout << endl << "----View Recent Orders-----";
 }
 
-int main() {
+void Welcome(std::function<void()> ptr) {
+
+}
+
+int main(map<string, string> User) {
+	map<string, string> User = {{"name", ""}, {"credits", "0.0"}};
 	int welcomeAnswer;
 	bool breakwhile = false;
 	//loop forever until user types a correct answer answer
 	//Sets breakwhile to true when a correct answer is entered
+
 	while (!breakwhile) {
 		cout << "----Welcome to Hot Potato!----\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		cin >> welcomeAnswer;
@@ -120,7 +126,7 @@ int main() {
 		//check if answer is valid
 		switch (welcomeAnswer) {
 			case 1:
-				addCredits(main);
+				User = addCredits(main, User);
 				breakwhile = true;
 				break;
 			case 2:
@@ -142,8 +148,6 @@ int main() {
 	}
 
 }
-
-
 
 
 
