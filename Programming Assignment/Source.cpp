@@ -39,32 +39,42 @@ TODO:		Key:
 //public:
 //	string name;
 //	double price;
-//};
+
+
+// Reference 2
+// Function loops over every character in the string until it reaches a letter and stops and returns false otherwise true.
+
 
 //reference 1 
 void addCredits(std::function<void()> ptr) {
 	// Set Variables
-	double creditAnswer;
+	string creditAnswerS;
+	double creditAnswerD;
 	string sure = "n";
 	double credits = 0;
+	char* p;
 
 	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
-			
 			cout << endl << "How many credits would you like to add?\n- ";
-			cin >> creditAnswer;
+			cin >> creditAnswerS;
+			// convert string to a double
+			creditAnswerD = strtod(creditAnswerS.c_str(), &p);
+			
+			if (*p) {
+				cout << "Error: NAN";
+				continue;
+			}
 			//make sure it's not too small
-			//I think this is fine for a magic number as there's now way it's gonna change.
-			if (creditAnswer < 1.0) {
+			//I think this is fine for a magic number as there's no way it's gonna change.
+			if (creditAnswerD < 1.0) {
 				cout << endl << "Entry too small";
 				continue;
 			}
-			//make sure it's not too big
-			//gonna change later as this is not very elegant
-			// also magic number = bad
-			else if (creditAnswer > 9999999999999999999) {
+			//make sure it's not too big, this feels wrong but idk
+			else if (creditAnswerD > 999999999999999999) {
 				cout << endl << "Entry too large";
 				continue;
 			}
@@ -84,8 +94,7 @@ void addCredits(std::function<void()> ptr) {
 
 			
 		}
-		credits += creditAnswer;
-		int ans;
+		credits += creditAnswerD;
 		cout << endl << "New Amount: " << credits << endl << endl;
 		ptr();
 	}
@@ -144,6 +153,6 @@ int main() {
 References:
 
 1 - https://www.quora.com/How-do-you-pass-a-function-to-another-function-in-C-and-what-is-its-use
-
+2 - https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
 
 */
