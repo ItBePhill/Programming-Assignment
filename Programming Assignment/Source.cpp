@@ -45,7 +45,8 @@ TODO:		Key:
 //reference 1 
 void addCredits(std::function<void()> ptr) {
 	// Set Variables
-	double creditAnswer;
+	string creditAnswerS;
+	double creditAnswerD;
 	string sure = "n";
 	double credits = 0;
 
@@ -53,19 +54,23 @@ void addCredits(std::function<void()> ptr) {
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
-			
 			cout << endl << "How many credits would you like to add?\n- ";
-			cin >> creditAnswer;
+			cin >> creditAnswerS;
+
+			if (isnan<string>(creditAnswerS.c_str())) {
+				cout << "Error: NAN";
+				continue;
+			}
+			creditAnswerD = strtod(creditAnswerS.c_str(), NULL);
+			
 			//make sure it's not too small
-			//I think this is fine for a magic number as there's now way it's gonna change.
-			if (creditAnswer < 1.0) {
+			//I think this is fine for a magic number as there's no way it's gonna change.
+			if (creditAnswerD < 1.0) {
 				cout << endl << "Entry too small";
 				continue;
 			}
 			//make sure it's not too big
-			//gonna change later as this is not very elegant
-			// also magic number = bad
-			else if (creditAnswer > 9999999999999999999) {
+			else if (creditAnswerD > 999999999999) {
 				cout << endl << "Entry too large";
 				continue;
 			}
@@ -85,8 +90,7 @@ void addCredits(std::function<void()> ptr) {
 
 			
 		}
-		credits += creditAnswer;
-		int ans;
+		credits += creditAnswerD;
 		cout << endl << "New Amount: " << credits << endl << endl;
 		ptr();
 	}
