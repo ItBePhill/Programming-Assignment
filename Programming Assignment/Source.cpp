@@ -11,16 +11,15 @@ using namespace std;
 
 /*
 TODO:		Key: 
-			 // fully done
+			 // done
 			 / doing
 			 
 - Research how to read and write to files, probably JSON or maybe an sqlite db
-- Research Constant Variables
-- Finish Add Credits Function /
-- Create new Welcome function so the main function is just calling other functions
+- Finish Add Credits Function //
+- Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function
 - Finish View Recent Function
-- change to cin.fail()
+- change to cin.fail() /
 */
 
 
@@ -40,27 +39,32 @@ User addCredits(User user) {
 	string creditAnswerS;
 	double creditAnswerD;
 	string sure = "n";
-	double credits = 0.0;
-	char* p;
+	double credits = strtod(user.credits.c_str(), NULL);
 
 	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
-			cout << endl << "Hello! " << user.name << " How many credits would you like to add?\n- ";
+			cout << endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
 			cin >> creditAnswerS;
 			// convert string to a double
-			creditAnswerD = strtod(creditAnswerS.c_str(), &p);
+			creditAnswerD = strtod(creditAnswerS.c_str(), NULL);
 			
-			if (*p) {
+			if (cin.fail()) {
 				cout << "Error: NAN";
 				continue;
 			} 
 			//make sure it's not too small
 			//I think this is fine for a magic number as there's no way it's gonna change.
 			if (creditAnswerD < 1.0) {
-				cout << endl << "Entry too small";
-				continue;
+				if (creditAnswerD == -1) {
+					return user;
+				}
+				else {
+					cout << endl << "Entry too small";
+					continue;
+				}
+				
 			}
 			//make sure it's not too big, this feels wrong but idk
 			else if (creditAnswerD > 999999999999999999.0) {
@@ -107,45 +111,52 @@ User createuser(string name, string credits) {
 }
 
 
-int main(User user) {
+User welcome(User user) {
 	int welcomeAnswer;
 	bool breakwhile = false;
+	//loop forever until user types a correct answer answer
+	//Sets breakwhile to true when a correct answer is entered
+	while (!breakwhile) {
+		cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
+		cin >> welcomeAnswer;
+		//check if answer is valid
+		switch (welcomeAnswer) {
+		case 1:
+			user = addCredits(user);
+			breakwhile = true;
+			break;
+		case 2:
+			createOrder();
+			breakwhile = true;
+			break;
+		case 3:
+			viewRecent();
+			breakwhile = true;
+			break;
+		case 4:
+			cout << endl << "Bye! " << user.name << ", Come Back Soon!" << endl;
+			quick_exit(0);
+
+		default:
+			cout << "\nError: Invalid Option\n";
+			break;
+		}
+	}
+	welcome(user);
+}
+
+
+int main() {
+	User user = User();
+	user.name = "";
 	string name;
 	//check if the user is initialized or not (will be changed in the future, will read from file)
-	if (true) {
+	if (user.name == "") {
 		cout << "What is your name?\n- ";
 		getline(cin, name);
 		user = createuser(name, "0");
 	}
-	//loop forever until user types a correct answer answer
-	//Sets breakwhile to true when a correct answer is entered
-	while (!breakwhile) {
-		cout << "----Welcome to Hot Potato!----\n" << user.name << " What would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
-		cin >> welcomeAnswer;
-		//check if answer is valid
-		switch (welcomeAnswer) {
-			case 1:
-				user = addCredits(user);
-				breakwhile = true;
-				break;
-			case 2:
-				createOrder();
-				breakwhile = true;
-				break;
-			case 3:
-				viewRecent();
-				breakwhile = true;
-				break;
-			case 4:
-				cout << endl << "Bye! " << user.name <<  ", Come Back Soon!" << endl;
-				quick_exit(0);
-	
-			default:
-				cout << "\nError: Invalid Option\n";
-				break;
-		}
-	}
-	main(user);
+	welcome(user);
 }
 
 
