@@ -96,11 +96,11 @@ User addCredits(User user) {
 }
 void createOrder() {
 	cout << endl << "----Create A New Order-----";
-
 }
 void viewRecent() {
 	cout << endl << "----View Recent Orders-----";
 }
+
 
 User createuser(string name, string credits) {
 	//User not initialized so create a new user
@@ -114,48 +114,56 @@ User createuser(string name, string credits) {
 User welcome(User user) {
 	int welcomeAnswer;
 	bool breakwhile = false;
-	//loop forever until user types a correct answer answer
+	//loop forever until user types a correct answer
 	//Sets breakwhile to true when a correct answer is entered
 	while (!breakwhile) {
 		cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		cin >> welcomeAnswer;
 		//check if answer is valid
 		switch (welcomeAnswer) {
+			//add credits
 		case 1:
+			//set the user variable to what the fucntion return as this contains the updated credits.
 			user = addCredits(user);
 			breakwhile = true;
 			break;
+			//create an order
 		case 2:
 			createOrder();
 			breakwhile = true;
 			break;
+			//view recent orders
 		case 3:
 			viewRecent();
 			breakwhile = true;
 			break;
+			// quit
 		case 4:
 			cout << endl << "Bye! " << user.name << ", Come Back Soon!" << endl;
 			quick_exit(0);
-
+			// not an option
 		default:
 			cout << "\nError: Invalid Option\n";
 			break;
 		}
 	}
+	// call the function again to return the user to the welcome screen after choosing an option
 	welcome(user);
 }
 
 
 int main() {
+	// Initialize an empty user to avoid a memory error.
 	User user = User();
 	user.name = "";
 	string name;
-	//check if the user is initialized or not (will be changed in the future, will read from file)
+	//check if the user is initialized or not (will be changed in the future, will read from file) and if not create one.
 	if (user.name == "") {
 		cout << "What is your name?\n- ";
 		getline(cin, name);
 		user = createuser(name, "0");
 	}
+	// start the welcome screen
 	welcome(user);
 }
 
