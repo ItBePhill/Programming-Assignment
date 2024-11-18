@@ -20,6 +20,7 @@ TODO:		Key:
 - Finish Create Order Function
 - Finish View Recent Function
 - change to cin.fail() /
+- remove the previous menu when transitioning, so it doesn't fill the cmd
 */
 
 
