@@ -4,10 +4,13 @@
 
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <conio.h>
+#include <filesystem>
 //reference 2
 #include "json.hpp"
+using json = nlohmann::json;
 using namespace std;
 
 /*
@@ -15,13 +18,12 @@ TODO:		Key:
 			 // done
 			 / doing
 			 
-- Research how to read and write to files, probably JSON or maybe an sqlite db /
+- Research how to read and write to files, /
 - Finish Add Credits Function //
 - Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function /
 - Finish View Recent Function
-- change to cin.fail() //
-- remove the previous menu when transitioning, so it doesn't fill the cmd
+- remove the previous menu when transitioning, so it doesn't fill the cmd //
 */
 
 
@@ -94,6 +96,7 @@ User addCredits(User user) {
 		user.credits = credits;
 		return user;
 	}
+	return user;
 
 }
 User createOrder(User user) {
@@ -105,16 +108,29 @@ User viewRecent(User user) {
 	system("cls");
 	cout << "----View Recent Orders-----";
 	return user;
+
 }
 
 
 User createuser(string name,  double credits) {
 	system("cls");
-	//User not initialized so create a new user
+	//User not initialized so create a new User variable
 	User user = User();
 	user.credits = credits; 
 	user.name = name;
+	//Also save to corresponding json file
+	string filename = "users\\" + user.name + ".json";
+	json jsonf;
+	jsonf["name"] = user.name;
+	jsonf["credits"] = to_string(user.credits);
+	
+	std::ofstream f(filename);
+	f << jsonf;
 	return user;
+	
+	
+
+	
 }
 
 
@@ -161,17 +177,50 @@ void welcome(User user) {
 
 
 int main() {
-	system("cls");
 	// Initialize an empty user to avoid a memory error.
 	User user = User();
 	string name;
+	string filename;
+	// check if folders exist that will hold settings if not create them
+
+	//check if config folder exists
+	if (!filesystem::exists("config")) {
+		filesystem::create_directory("./config");
+	}
+	//check if potatoes folder exists
+	if (!filesystem::exists("config/potatoes")) {
+		filesystem::create_directory("./config/potatoes");
+	}
+	//check if toppings folder exists
+	if (!filesystem::exists("config/toppings")) {
+		filesystem::create_directory("./config/toppings");
+	}
+	//check if extras folder exists
+	if (!filesystem::exists("config/extras")) {
+		filesystem::create_directory("./config/extras");
+	}
+	//check if users folder exists
+	if (!filesystem::exists("users")) {
+		filesystem::create_directory("./users");
+	}
+
+
 	//check if the user is initialized or not (will be changed in the future, will read from file) and if not create one.
-	if (user.name == "") {
-		cout << "----Setup----\n";
-		cout << "What is your name?\n- ";
-		getline(cin, name);
+	cout << "----Startup----\n";
+	cout << "What is your name?\n- ";
+	getline(cin, name);
+	filename = "users\\" + name + ".json";
+	if (!filesystem::exists(filename)) {
 		user = createuser(name, 0.0);
 	}
+	else {
+		std::ifstream f(filename);
+		json data = json::parse(f);
+		user.name = data["name"];
+		user.credits = data["credits"];
+	}
+	
+	
 	// start the welcome screen
 	welcome(user);
 }
