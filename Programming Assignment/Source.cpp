@@ -18,7 +18,9 @@ TODO:		Key:
 			 // done
 			 / doing
 			 
-- Research how to read and write to files, /
+- Research how to read and write to files //
+- Create ReadJson Function /
+- Create UpdateJson Function //
 - Finish Add Credits Function //
 - Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function /
@@ -34,6 +36,28 @@ public:
 	string name = "";
 	double credits = 0.0;
 };
+
+
+//Update / Create JSON File, takes a user
+void UpdateJSON(User user) {
+	string filename = "users/" + user.name + ".json";
+	json jsonf;
+	std::ofstream f(filename);
+	jsonf["name"] = user.name;
+	jsonf["credits"] = to_string(user.credits);
+	f << jsonf;
+}
+//Read Json File, takes a filename
+User ReadJson(string filename) {
+	User user;
+	std::ofstream f(filename);
+	json data = json::parse(f);
+	user.name = data["name"];
+	//this is horrible and I hate it but idk how else to do it
+	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
+	return user;
+}
+
 
 
 User addCredits(User user) {
@@ -94,6 +118,7 @@ User addCredits(User user) {
 		}
 		credits += creditAnswerD;
 		user.credits = credits;
+		UpdateJSON(user);
 		return user;
 	}
 	return user;
@@ -119,18 +144,8 @@ User createuser(string name,  double credits) {
 	user.credits = credits; 
 	user.name = name;
 	//Also save to corresponding json file
-	string filename = "users\\" + user.name + ".json";
-	json jsonf;
-	jsonf["name"] = user.name;
-	jsonf["credits"] = to_string(user.credits);
-	
-	std::ofstream f(filename);
-	f << jsonf;
+	UpdateJSON(user);
 	return user;
-	
-	
-
-	
 }
 
 
@@ -205,19 +220,19 @@ int main() {
 	}
 
 
-	//check if the user is initialized or not (will be changed in the future, will read from file) and if not create one.
+	//check if the user is initialized or not (if the json file exists)
 	cout << "----Startup----\n";
 	cout << "What is your name?\n- ";
 	getline(cin, name);
 	filename = "users\\" + name + ".json";
 	if (!filesystem::exists(filename)) {
+		cout << "User doesn't exist";
+		system("pause");
 		user = createuser(name, 0.0);
+
 	}
 	else {
-		std::ifstream f(filename);
-		json data = json::parse(f);
-		user.name = data["name"];
-		user.credits = data["credits"];
+		user = ReadJson(filename);
 	}
 	
 	
