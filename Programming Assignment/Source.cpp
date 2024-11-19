@@ -6,6 +6,8 @@
 #include <iostream>
 #include <string>
 #include <conio.h>
+//reference 2
+#include "json.hpp"
 using namespace std;
 
 /*
@@ -13,10 +15,10 @@ TODO:		Key:
 			 // done
 			 / doing
 			 
-- Research how to read and write to files, probably JSON or maybe an sqlite db
+- Research how to read and write to files, probably JSON or maybe an sqlite db /
 - Finish Add Credits Function //
 - Create new Welcome function so the main function is just calling other functions //
-- Finish Create Order Function
+- Finish Create Order Function /
 - Finish View Recent Function
 - change to cin.fail() //
 - remove the previous menu when transitioning, so it doesn't fill the cmd
@@ -28,21 +30,22 @@ TODO:		Key:
 class User {
 public:
 	string name = "";
-	string credits = "";
+	double credits = 0.0;
 };
 
 
-
-//reference 1 
 User addCredits(User user) {
+	system("cls");
 	// Set Variables
+	double minAnswer = 1.0;
+	double maxAnswer = 999999999999999999.0;
 	string creditAnswerS;
 	double creditAnswerD;
 	string sure = "n";
 	char* notnum;
-	double credits = strtod(user.credits.c_str(), NULL);
+	double credits = user.credits;
 
-	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
+	cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
@@ -50,13 +53,13 @@ User addCredits(User user) {
 			cin >> creditAnswerS;
 			// convert string to a double
 			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum);
+			// make sure it's a number. reference 1
 			if (*notnum) {
 				cout << "Error: NAN";
 				continue;
 			} 
 			//make sure it's not too small
-			//I think this is fine for a magic number as there's no way it's gonna change.
-			if (creditAnswerD < 1.0) {
+			if (creditAnswerD < minAnswer) {
 				if (creditAnswerD == -1) {
 					return user;
 				}
@@ -66,13 +69,13 @@ User addCredits(User user) {
 				}
 				
 			}
-			//make sure it's not too big, this feels wrong but idk
-			else if (creditAnswerD > 999999999999999999.0) {
+			//make sure it's not too big
+			else if (creditAnswerD > maxAnswer) {
 				cout << endl << "Entry too large";
 				continue;
 			}
 			
-			cout << endl << "Are you Sure? (y/n)";
+			cout << endl << "Are you Sure?\nNew amount will be: " << credits+creditAnswerD << "\n(y / n)\n- ";
 			cin >> sure;
 			if (sure == "y") {
 				break;
@@ -88,21 +91,25 @@ User addCredits(User user) {
 			
 		}
 		credits += creditAnswerD;
-		user.credits = to_string(credits);
-		cout << endl << "New Amount: " << credits << endl << endl;
+		user.credits = credits;
 		return user;
 	}
 
 }
-void createOrder() {
-	cout << endl << "----Create A New Order-----";
+User createOrder(User user) {
+	system("cls");
+	cout << "----Create A New Order-----";
+	return user;
 }
-void viewRecent() {
-	cout << endl << "----View Recent Orders-----";
+User viewRecent(User user) {
+	system("cls");
+	cout << "----View Recent Orders-----";
+	return user;
 }
 
 
-User createuser(string name, string credits) {
+User createuser(string name,  double credits) {
+	system("cls");
 	//User not initialized so create a new user
 	User user = User();
 	user.credits = credits; 
@@ -112,6 +119,7 @@ User createuser(string name, string credits) {
 
 
 void welcome(User user) {
+	system("cls");
 	int welcomeAnswer;
 	bool breakwhile = false;
 	//loop forever until user types a correct answer
@@ -129,12 +137,12 @@ void welcome(User user) {
 			break;
 			//create an order
 		case 2:
-			createOrder();
+			user = createOrder(user);
 			breakwhile = true;
 			break;
 			//view recent orders
 		case 3:
-			viewRecent();
+			user = viewRecent(user);
 			breakwhile = true;
 			break;
 			// quit
@@ -153,14 +161,16 @@ void welcome(User user) {
 
 
 int main() {
+	system("cls");
 	// Initialize an empty user to avoid a memory error.
 	User user = User();
 	string name;
 	//check if the user is initialized or not (will be changed in the future, will read from file) and if not create one.
 	if (user.name == "") {
+		cout << "----Setup----\n";
 		cout << "What is your name?\n- ";
 		getline(cin, name);
-		user = createuser(name, "0");
+		user = createuser(name, 0.0);
 	}
 	// start the welcome screen
 	welcome(user);
@@ -173,7 +183,7 @@ int main() {
 /*
 References:
 
-1 - https://www.quora.com/How-do-you-pass-a-function-to-another-function-in-C-and-what-is-its-use
-2 - https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
+1 - https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
+2 - Lohmann, N. (2023). JSON for Modern C++ (Version 3.11.3) [Computer software]. https://github.com/nlohmann
 
 */
