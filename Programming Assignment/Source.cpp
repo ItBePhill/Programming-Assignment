@@ -5,8 +5,7 @@
 
 #include <iostream>
 #include <string>
-#include <functional>
-#include <map>
+#include <conio.h>
 using namespace std;
 
 /*
@@ -19,7 +18,7 @@ TODO:		Key:
 - Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function
 - Finish View Recent Function
-- change to cin.fail() /
+- change to cin.fail() //
 - remove the previous menu when transitioning, so it doesn't fill the cmd
 */
 
@@ -28,8 +27,8 @@ TODO:		Key:
 //credits are passed in as a string for easier storage;
 class User {
 public:
-	string name;
-	string credits;
+	string name = "";
+	string credits = "";
 };
 
 
@@ -40,6 +39,7 @@ User addCredits(User user) {
 	string creditAnswerS;
 	double creditAnswerD;
 	string sure = "n";
+	char* notnum;
 	double credits = strtod(user.credits.c_str(), NULL);
 
 	cout << endl << "-----Add Credits-----\nCurrent Credits: " << credits;
@@ -49,9 +49,8 @@ User addCredits(User user) {
 			cout << endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
 			cin >> creditAnswerS;
 			// convert string to a double
-			creditAnswerD = strtod(creditAnswerS.c_str(), NULL);
-			
-			if (cin.fail()) {
+			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum);
+			if (*notnum) {
 				cout << "Error: NAN";
 				continue;
 			} 
@@ -112,7 +111,7 @@ User createuser(string name, string credits) {
 }
 
 
-User welcome(User user) {
+void welcome(User user) {
 	int welcomeAnswer;
 	bool breakwhile = false;
 	//loop forever until user types a correct answer
@@ -156,7 +155,6 @@ User welcome(User user) {
 int main() {
 	// Initialize an empty user to avoid a memory error.
 	User user = User();
-	user.name = "";
 	string name;
 	//check if the user is initialized or not (will be changed in the future, will read from file) and if not create one.
 	if (user.name == "") {
