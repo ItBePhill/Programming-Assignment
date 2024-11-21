@@ -26,16 +26,16 @@ TODO:		Key:
 - Finish Create Order Function /
 - Finish View Recent Function
 - change to cin.fail() /
-- remove the previous menu when transitioning, so it doesn't fill the cmd
+- remove the previous menu when transitioning, so it doesn't fill the cmd //
 */
 
 
 // User class, gets passed around, contains information about the user.
-//credits are passed in as a string for easier storage;
+//credits are passed in as a string for easier storage and reading from json file;
 class User {
 public:
 	string name = "";
-	double credits = 0.0;
+	string credits = "0.0";
 };
 
 
@@ -45,17 +45,19 @@ void UpdateJSON(User user) {
 	json jsonf;
 	std::ofstream f(filename);
 	jsonf["name"] = user.name;
-	jsonf["credits"] = to_string(user.credits);
+	jsonf["credits"] = user.credits;
 	f << jsonf;
 }
 //Read Json File, takes a filename
 User ReadJson(string filename) {
 	User user;
-	std::ofstream f(filename);
+	std::ifstream f(filename);
 	json data = json::parse(f);
+	cout << data["name"];
+	cout << data["credits"];
 	user.name = data["name"];
-	//this is horrible and I hate it but idk how else to do it
-	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
+	//this is horrible and I hate it but idk how else to do 
+	user.credits = to_string(data["credits"]);
 	return user;
 }
 
@@ -70,7 +72,7 @@ User addCredits(User user) {
 	double creditAnswerD;
 	string sure = "n";
 	char* notnum;
-	double credits = user.credits;
+	double credits = strtod(user.credits.c_str(), NULL);
 
 	cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
@@ -102,7 +104,7 @@ User addCredits(User user) {
 				continue;
 			}
 			
-			cout << endl << "Are you Sure?\nNew amount will be: " << credits+creditAnswerD << "\n(y / n)\n- ";
+			cout << endl << "Are you Sure?\nNew amount will be: " << credits + creditAnswerD << "\n(y / n)\n- ";
 			cin >> sure;
 			if (sure == "y") {
 				break;
@@ -225,7 +227,10 @@ int main() {
 	cout << "----Startup----\n";
 	cout << "What is your name?\n- ";
 	getline(cin, name);
-	filename = "users\\" + name + ".json";
+
+	filename = "users/" + name + ".json";
+	cout << endl << filename << endl;
+	system("pause");
 	if (!filesystem::exists(filename)) {
 		cout << "User doesn't exist";
 		system("pause");
