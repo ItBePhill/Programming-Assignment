@@ -19,7 +19,7 @@ TODO:		Key:
 			 / doing
 			 
 - Research how to read and write to files //
-- Create ReadJson Function /
+- Create ReadJson Function //
 - Create UpdateJson Function //
 - Finish Add Credits Function //
 - Create new Welcome function so the main function is just calling other functions //
