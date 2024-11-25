@@ -21,7 +21,7 @@ TODO:		Key:
 #include <iostream>
 #include "ConfHeader.h"
 using namespace std;
-//Take in a name and a type and save the new config.
+//Take in a name and a type and save the new topping, extra or potato.
 int conf::Add(string name, conf::ConfType type) {
 	cout << endl;
 	switch (type) {
@@ -37,7 +37,7 @@ int conf::Add(string name, conf::ConfType type) {
 	}
 	return 0;
 }
-//Edit a config using the name and ConfType
+//Edit a config using the name and ConfType.
 int conf::Edit(string name, conf::ConfType type) {
 	cout << "Edit";
 	return 0;
