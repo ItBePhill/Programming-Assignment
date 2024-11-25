@@ -56,7 +56,7 @@ User ReadJson(string filename) {
 	cout << data["name"];
 	cout << data["credits"];
 	user.name = data["name"];
-	//this is horrible and I hate it but idk how else to do 
+	//this is horrible and I hate it
 	user.credits = to_string(data["credits"]);
 	return user;
 }
