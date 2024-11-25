@@ -14,6 +14,7 @@ TODO:		Key:
 - Create function for adding extra.
 - Create function for adding potato.
 - Create other utility functions, e.g. Clear user folder.
+- Create Function for viewing current config, e.g. toppings /  extras  / potatoes.
 */
 
 #include <iostream>
