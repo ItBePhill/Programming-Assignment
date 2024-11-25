@@ -17,9 +17,32 @@ TODO:		Key:
 - Create Function for viewing current config, e.g. toppings /  extras  / potatoes.
 */
 
+
 #include <iostream>
 using namespace std;
 
+//enum containing topping, extra, potato, will tell functions which you are using.
+enum confType {topping, extra, potato};
+
+
+//Take in a name and a type and save the new config.
+void Add(string name, confType type) {
+	switch (type) {
+	case topping:
+		cout << "Topping";
+		break;
+	case extra:
+		cout << "Extra";
+		break;
+	case potato:
+		cout << "Potato";
+		break;
+	}
+}
+//Edit a config using the name and ConfType
+void Edit(string name, confType type) {
+	return;
+}
 
 
 int main() {
