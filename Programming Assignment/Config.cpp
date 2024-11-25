@@ -19,38 +19,33 @@ TODO:		Key:
 
 
 #include <iostream>
+#include "ConfHeader.h"
 using namespace std;
-
-//enum containing topping, extra, potato, will tell functions which you are using.
-enum confType {topping, extra, potato};
-
-
 //Take in a name and a type and save the new config.
-void Add(string name, confType type) {
+int conf::Add(string name, conf::ConfType type) {
+	cout << endl;
 	switch (type) {
-	case topping:
+	case conf::topping:
 		cout << "Topping";
 		break;
-	case extra:
+	case conf::extra:
 		cout << "Extra";
 		break;
-	case potato:
+	case conf::potato:
 		cout << "Potato";
 		break;
 	}
-}
-//Edit a config using the name and ConfType
-void Edit(string name, confType type) {
-	return;
-}
-
-
-int main() {
 	return 0;
 }
-
-
-
+//Edit a config using the name and ConfType
+int conf::Edit(string name, conf::ConfType type) {
+	cout << "Edit";
+	return 0;
+}
+int conf::View(conf::ConfType type) {
+	cout << "View";
+	return 0;
+}
 /*
 References:
 

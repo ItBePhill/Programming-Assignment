@@ -28,6 +28,7 @@ TODO:		Key:
 #include <string>
 #include <conio.h>
 #include <filesystem>
+#include "ConfHeader.h"
 //reference 2
 #include "json.hpp"
 using json = nlohmann::json;
@@ -235,10 +236,9 @@ int main() {
 	getline(cin, name);
 
 	filename = "users/" + name + ".json";
-	cout << endl << filename << endl;
 	system("pause");
 	if (!filesystem::exists(filename)) {
-		cout << "User doesn't exist";
+		cout << endl << "User doesn't exist";
 		system("pause");
 		user = createuser(name, 0.0);
 
