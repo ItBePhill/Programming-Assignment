@@ -1,7 +1,27 @@
-// Programming Assignment
-// Each reference will be at bottom of file and will be numbered
-//Brief: https://portal.uclan.ac.uk/ultra/courses/_177144_1/outline/file/_7529994_1
+/*
+Programming Assignment - Source.cpp the main command line program.
+e.g. Create users, add credits, create orders and view orders.
+Each reference will be at bottom of the file and will be numbered
+Brief: https://portal.uclan.ac.uk/ultra/courses/_177144_1/outline/file/_7529994_1
+requires C++17 or above.
+*/
 
+
+
+/*
+TODO:		Key:
+			 // done
+			 / doing
+
+- Research how to read and write to files //
+- Create ReadJson Function //
+- Create UpdateJson Function //
+- Finish Add Credits Function //
+- Create new Welcome function so the main function is just calling other functions //
+- Finish Create Order Function /
+- Finish View Recent Function
+- remove the previous menu when transitioning, so it doesn't fill the cmd //
+*/
 
 #include <iostream>
 #include <fstream>
@@ -13,21 +33,7 @@
 using json = nlohmann::json;
 using namespace std;
 
-/*
-TODO:		Key: 
-			 // done
-			 / doing
-			 
-- Research how to read and write to files //
-- Create ReadJson Function //
-- Create UpdateJson Function //
-- Finish Add Credits Function //
-- Create new Welcome function so the main function is just calling other functions //
-- Finish Create Order Function /
-- Finish View Recent Function
-- change to cin.fail() /
-- remove the previous menu when transitioning, so it doesn't fill the cmd //
-*/
+
 
 
 // User class, gets passed around, contains information about the user.
@@ -35,7 +41,7 @@ TODO:		Key:
 class User {
 public:
 	string name = "";
-	string credits = "0.0";
+	double credits = 0.0;
 };
 
 
@@ -57,7 +63,7 @@ User ReadJson(string filename) {
 	cout << data["credits"];
 	user.name = data["name"];
 	//this is horrible and I hate it but idk how else to do 
-	user.credits = to_string(data["credits"]);
+	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
 	return user;
 }
 
@@ -72,7 +78,7 @@ User addCredits(User user) {
 	double creditAnswerD;
 	string sure = "n";
 	char* notnum;
-	double credits = strtod(user.credits.c_str(), NULL);
+	double credits = user.credits;
 
 	cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
