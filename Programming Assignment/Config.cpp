@@ -33,24 +33,28 @@ int conf::Add(Item item, conf::ItemType type) {
 	case conf::topping:
 		cout << "Topping";
 		jsonf = std::ofstream("config/toppings/"+item.name+".json");
-		jsond["name"] = item.name;
-		jsond["price"] = item.price;
-		jsonf << jsond;
 		break;
 	case conf::extra:
 		cout << "Extra";
+		jsonf = std::ofstream("config/extras/" + item.name + ".json");
 		break;
 	case conf::potato:
+		jsonf = std::ofstream("config/potatoes/" + item.name + ".json");
 		cout << "Potato";
 		break;
 	}
+	jsond["name"] = item.name;
+	jsond["price"] = item.price;
+	jsonf << jsond;
 	return 0;
 }
-//Edit a config using the  and ItemType.
+//Edit or remove an item using the name and ItemType.
 int conf::Edit(string name, conf::ItemType type) {
 	cout << "Edit";
+
 	return 0;
 }
+//view all menu items
 int conf::View(conf::ItemType type) {
 	cout << "View";
 	return 0;
