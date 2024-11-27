@@ -10,23 +10,32 @@ TODO:		Key:
 			 // done
 			 / doing
 
-- Create function for adding topping.
-- Create function for adding extra.
-- Create function for adding potato.
-- Create other utility functions, e.g. Clear user folder.
+- Create function for adding item. /
+- Create function for editing an item
 - Create Function for viewing current config, e.g. toppings /  extras  / potatoes.
 */
 
 
 #include <iostream>
 #include "ConfHeader.h"
+#include "json.hpp"
+#include <fstream>
+using json = nlohmann::json;
 using namespace std;
-//Take in a name and a type and save the new topping, extra or potato.
-int conf::Add(string name, conf::ConfType type) {
+using namespace conf;
+
+//Take in an item (name and price) and a type and save the new item.
+int conf::Add(Item item, conf::ItemType type) {
+	std::ofstream jsonf;
+	json jsond;
 	cout << endl;
 	switch (type) {
 	case conf::topping:
 		cout << "Topping";
+		jsonf = std::ofstream("config/toppings/"+item.name+".json");
+		jsond["name"] = item.name;
+		jsond["price"] = item.price;
+		jsonf << jsond;
 		break;
 	case conf::extra:
 		cout << "Extra";
@@ -37,12 +46,12 @@ int conf::Add(string name, conf::ConfType type) {
 	}
 	return 0;
 }
-//Edit a config using the name and ConfType.
-int conf::Edit(string name, conf::ConfType type) {
+//Edit a config using the  and ItemType.
+int conf::Edit(string name, conf::ItemType type) {
 	cout << "Edit";
 	return 0;
 }
-int conf::View(conf::ConfType type) {
+int conf::View(conf::ItemType type) {
 	cout << "View";
 	return 0;
 }

@@ -23,28 +23,34 @@ TODO:		Key:
 - remove the previous menu when transitioning, so it doesn't fill the cmd //
 */
 
+//includes
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <conio.h>
 #include <filesystem>
-#include "ConfHeader.h"
+#include "./ConfHeader.h"
 //reference 2
 #include "json.hpp"
 using json = nlohmann::json;
 using namespace std;
 
-
+void Config() {
+	cout << "----Config----";
+	conf::Item item;
+	item.name = "test";
+	item.price = 6.5;
+	conf::Add(item, conf::topping);
+	quick_exit(0);
+}
 
 
 // User class, gets passed around, contains information about the user.
-//credits are passed in as a string for easier storage and reading from json file;
 class User {
 public:
 	string name = "";
 	double credits = 0.0;
 };
-
 
 //Update / Create JSON File, takes a user
 void UpdateJSON(User user) {
@@ -73,8 +79,8 @@ User ReadJson(string filename) {
 User addCredits(User user) {
 	system("cls");
 	// Set Variables
-	double minAnswer = 1.0;
-	double maxAnswer = 999999999999999999.0;
+	const double minAnswer = 1.0;
+	const double maxAnswer = 999999999999999999.0;
 	string creditAnswerS;
 	double creditAnswerD;
 	string sure = "n";
@@ -198,6 +204,7 @@ void welcome(User user) {
 	}
 	// call the function again to return the user to the welcome screen after choosing an option
 	welcome(user);
+	
 }
 
 
@@ -237,6 +244,9 @@ int main() {
 
 	filename = "users/" + name + ".json";
 	system("pause");
+	if (name == "Config") {
+		Config();
+	}
 	if (!filesystem::exists(filename)) {
 		cout << endl << "User doesn't exist";
 		system("pause");
@@ -250,6 +260,8 @@ int main() {
 	
 	// start the welcome screen
 	welcome(user);
+	
+
 }
 
 
