@@ -13,15 +13,13 @@
 namespace conf {
 	class Item {
 	public:
-		std::string name;
-		double price;
+		std::string name = "";
+		double price = 0.00;
 	};
 	// enum for what type of item;
 	const enum ItemType { topping, extra, potato };
 	//add function adds an item to the menu e.g. creates a new json file for the item.
 	int Add(Item item, ItemType type);
-	//edit function edits an item
-	int Edit(Item item, ItemType type);
 	//view function shows all items
 	std::vector<std::filesystem::path> View(ItemType type);
 	

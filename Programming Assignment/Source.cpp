@@ -50,7 +50,7 @@ void Config() {
 	std::vector<std::filesystem::path> paths;
 
 	while (!breakwhile && !std::cin.fail()) {
-		std::cout << "What would you like to do?\n1 - Add an Item\n2 - View Items\n- ";
+		std::cout << "What would you like to do?\n1 - Add or edit an item\n2 - View Items\n- ";
 		getline(std::cin, welcomeAnswerString);
 		welcomeAnswer = atoi(welcomeAnswerString.c_str());
 		//check if answer is valid
@@ -59,7 +59,7 @@ void Config() {
 		case 1:
 			system("cls");
 			while (!breakwhile2 && !std::cin.fail()) {
-				std::cout << "What is the type of Item you want to add?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				std::cout << "What is the type of item you want to add or edit?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
 				getline(std::cin, type);
 				switch (atoi(type.c_str())) {
 				case 1:
@@ -81,11 +81,11 @@ void Config() {
 
 			}
 		
-		std::cout << "What is the name of the item you would like to add?\n- ";
+		std::cout << "What is the name of the item you would like to add or edit?\n- ";
 		getline(std::cin, item.name);
 
 		while (price == "" && !std::cin.fail()) {
-			std::cout << "What is the price of the item you would like to add?\n- ";
+			std::cout << "What is the price of the item you would like to add or edit?\n- ";
 			getline(std::cin, price);
 
 		}
@@ -93,7 +93,7 @@ void Config() {
 
 
 		conf::Add(item, itemtype);
-		std::cout << std::endl << "Successfully Added Item";
+		std::cout << std::endl << "Successfully Added / Edited Item";
 		breakwhile = true;
 		break;
 		
