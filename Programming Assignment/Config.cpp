@@ -50,10 +50,6 @@ int conf::Add(Item item, conf::ItemType type) {
 	jsonf << jsond;
 	return 0;
 }
-//Edit or remove an item using the name and ItemType.
-int conf::Edit(Item item, conf::ItemType type) {
-	return 0;
-}
 //view all menu items
 std::vector<filesystem::path> conf::View(conf::ItemType type) {
 	cout << endl << "View" << endl;

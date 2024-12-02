@@ -36,6 +36,7 @@ TODO:		Key:
 using json = nlohmann::json;
 //----------------------------------------------------------------
 void Config() {
+	system("cls");
 	std::cout << "----Config----" << std::endl;
 	bool breakwhile = false;
 	//this isn't great naming but it works for now.
@@ -56,6 +57,7 @@ void Config() {
 		switch (welcomeAnswer) {
 
 		case 1:
+			system("cls");
 			while (!breakwhile2 && !std::cin.fail()) {
 				std::cout << "What is the type of Item you want to add?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
 				getline(std::cin, type);
@@ -80,7 +82,6 @@ void Config() {
 			}
 		
 		std::cout << "What is the name of the item you would like to add?\n- ";
-		std::cin.clear();
 		getline(std::cin, item.name);
 
 		while (price == "" && !std::cin.fail()) {
@@ -95,8 +96,9 @@ void Config() {
 		std::cout << std::endl << "Successfully Added Item";
 		breakwhile = true;
 		break;
-
+		
 		case 2:
+			system("cls");
 			while (!breakwhile2 && !std::cin.fail()) {
 				std::cout << "What type of items do you want to view?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
 				getline(std::cin, type);
@@ -118,7 +120,30 @@ void Config() {
 					break;
 				}
 			}
-			conf::View(itemtype);
+			paths = conf::View(itemtype);
+			
+			switch (itemtype) {
+			case conf::topping:
+				std::cout << std::endl << "--Toppings--" << std::endl;
+				break;
+			case conf::extra:
+				std::cout << std::endl << "--Extras--" << std::endl;
+				break;
+			case conf::potato:
+				std::cout << std::endl << "--Potatoes--" << std::endl;
+				break;
+
+			}
+			for (auto i : paths) {
+				std::cout << "-----------------------------------" << std::endl;
+				conf::Item item;
+				std::ifstream f(i);
+				json data = json::parse(f);
+				std::cout << "Name: " << data["name"] << std::endl;
+				std::cout << "Price: " << data["price"];
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+
+			}
 			breakwhile = true;
 			break;
 
@@ -129,7 +154,26 @@ void Config() {
 		}	
 	}
 	system("pause");
-	quick_exit(0);
+	bool breakwhile3 = false;
+
+	while (!breakwhile3 && !std::cin.fail()) {
+		std::cout << "Would you like to return to the config menu or quit?\n1 - return to config menu\n2 - Quit\n- ";
+		std::getline(std::cin, welcomeAnswerString);
+		welcomeAnswer = atoi(welcomeAnswerString.c_str());
+		//check if answer is valid
+		switch (welcomeAnswer) {
+			//add credits
+		case 1:
+			Config();
+			break;
+			//create an order
+		case 2:
+			quick_exit(0);
+		default:
+			std::cout << "\nError: Invalid Option\n";
+			break;
+		}
+	}
 }
 
 
@@ -137,7 +181,7 @@ void Config() {
 class User {
 public:
 	std::string name = "";
-	double credits = 0.0;
+	double credits = 0.00;
 };
 
 //Update / Create JSON File, takes a user
@@ -330,7 +374,7 @@ int main() {
 	//check if the user is initialized or not (if the json file exists)
 	std::cout << "----Startup----\n";
 	while (name == "") {
-		std::cout << "What is your name?\nor enter a command use /help for a list of commands\n- ";
+		std::cout << std::endl << "use /help for a list of commands\n\nWhat is your name?\n- ";
 		getline(std::cin, name);
 
 		filename = "users/" + name + ".json";
@@ -349,6 +393,11 @@ int main() {
 			}
 			else if (name.contains("clearItems")) {
 				quick_exit(0);
+			}
+			else {
+				std::cout << "Error: command doesn't exist" << std::endl;
+				name = "";
+				continue;
 			}
 		}
 	}
