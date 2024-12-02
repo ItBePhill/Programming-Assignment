@@ -20,6 +20,8 @@ TODO:		Key:
 #include "ConfHeader.h"
 #include "json.hpp"
 #include <fstream>
+#include <filesystem>
+#include <vector>
 using json = nlohmann::json;
 using namespace std;
 using namespace conf;
@@ -49,15 +51,30 @@ int conf::Add(Item item, conf::ItemType type) {
 	return 0;
 }
 //Edit or remove an item using the name and ItemType.
-int conf::Edit(string name, conf::ItemType type) {
-	cout << "Edit";
-
+int conf::Edit(Item item, conf::ItemType type) {
 	return 0;
 }
 //view all menu items
-int conf::View(conf::ItemType type) {
-	cout << "View";
-	return 0;
+std::vector<filesystem::path> conf::View(conf::ItemType type) {
+	cout << endl << "View" << endl;
+	vector<filesystem::path> paths;
+	string path = "";
+	//reference 1--------------------------------------------------------
+	switch (type) {
+	case conf::topping:
+		path = "./config/toppings";
+		break;
+	case conf::extra:
+		path = "./config/extras";
+		break;
+	case conf::potato:
+		path = "./config/potatoes";
+		break;
+	}
+	for (const auto& entry : filesystem::directory_iterator(path))
+		paths.push_back(entry.path());
+	//-------------------------------------------------------------------
+	return paths;
 }
 /*
 References:

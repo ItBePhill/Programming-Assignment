@@ -28,6 +28,7 @@ TODO:		Key:
 #include <fstream>
 #include <string>
 #include <conio.h>
+#include <vector>
 #include <filesystem>
 #include "./ConfHeader.h"
 //reference 2
@@ -37,11 +38,50 @@ using namespace std;
 
 void Config() {
 	cout << "----Config----";
-	conf::Item item;
-	item.name = "test";
+	/*conf::Item item;
+	item.name = "test2";
 	item.price = 6.5;
-	conf::Add(item, conf::topping);
+	conf::Add(item, conf::topping);*/
+	vector<filesystem::path> paths;
+	paths = conf::View(conf::topping);
+	bool breakwhile = false;
+	int welcomeAnswer;
+	while (!breakwhile && cin.fail()) {
+		cout << "What would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
+		cin >> welcomeAnswer;
+		//check if answer is valid
+		switch (welcomeAnswer) {
+
+		case 1:
+			break;
+
+		case 2:
+			break;
+
+		case 3:
+			break;
+
+		case 4:
+			break;
+			// not an option
+		default:
+			cout << "\nError: Invalid Option\n";
+			break;
+		}
+	}
+	for (auto i : paths) {
+		cout << endl;
+		conf::Item item;
+		std::ifstream f(i);
+		json data = json::parse(f);
+		cout << data["name"];
+		cout << data["price"];
+	}
+
+
+
 	quick_exit(0);
+
 }
 
 
@@ -171,7 +211,7 @@ void welcome(User user) {
 	bool breakwhile = false;
 	//loop forever until user types a correct answer
 	//Sets breakwhile to true when a correct answer is entered
-	while (!breakwhile) {
+	while (!breakwhile && cin.fail()) {
 		cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		cin >> welcomeAnswer;
 		//check if answer is valid
@@ -211,7 +251,7 @@ void welcome(User user) {
 int main() {
 	// Initialize an empty user to avoid a memory error.
 	User user = User();
-	string name;
+	string name = "";
 	string filename;
 	// check if folders exist that will hold settings if not create them
 
@@ -239,14 +279,31 @@ int main() {
 
 	//check if the user is initialized or not (if the json file exists)
 	cout << "----Startup----\n";
-	cout << "What is your name?\n- ";
-	getline(cin, name);
+	while (name == "") {
+		cout << "What is your name?\nor enter a command use /help for a list of commands\n- ";
+		getline(cin, name);
 
-	filename = "users/" + name + ".json";
-	system("pause");
-	if (name == "Config") {
-		Config();
+		filename = "users/" + name + ".json";
+		system("pause");
+		if (name.contains("/")) {
+			if (name.contains("help")) {
+				cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items";
+				name = "";
+				continue;
+			}
+			if (name.contains("config")) {
+				Config();
+			}
+			else if (name.contains("clearUser")) {
+				quick_exit(0);
+			}
+			else if (name.contains("clearItems")) {
+				quick_exit(0);
+			}
+		}
 	}
+
+
 	if (!filesystem::exists(filename)) {
 		cout << endl << "User doesn't exist";
 		system("pause");

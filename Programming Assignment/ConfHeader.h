@@ -1,4 +1,3 @@
-#pragma once
 //makes sure it cannot be declared twice in a source file.
 //with ifndef which checks if the headerfile is already defined and return a blank file is so.
 //otherwise just return the header file
@@ -6,6 +5,8 @@
 #define ConfHeader_H
 #include <string>
 #include <iostream>
+#include <vector>
+#include <filesystem>
 
 
 //Declare Stuff for Source.cpp to use from Config.cpp
@@ -20,9 +21,9 @@ namespace conf {
 	//add function adds an item to the menu e.g. creates a new json file for the item.
 	int Add(Item item, ItemType type);
 	//edit function edits an item
-	inline int Edit(std::string name, ItemType type);
+	int Edit(Item item, ItemType type);
 	//view function shows all items
-	inline int View(ItemType type);
+	std::vector<std::filesystem::path> View(ItemType type);
 	
 }
 
