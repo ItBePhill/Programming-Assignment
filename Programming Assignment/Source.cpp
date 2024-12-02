@@ -31,57 +31,82 @@ TODO:		Key:
 #include <vector>
 #include <filesystem>
 #include "./ConfHeader.h"
-//reference 2
+//reference 2: using json.hpp header to read and write json files.
 #include "json.hpp"
 using json = nlohmann::json;
+//----------------------------------------------------------------
 using namespace std;
 
 void Config() {
-	cout << "----Config----";
-	/*conf::Item item;
-	item.name = "test2";
-	item.price = 6.5;
-	conf::Add(item, conf::topping);*/
-	vector<filesystem::path> paths;
-	paths = conf::View(conf::topping);
+	cout << "----Config----" << endl;
 	bool breakwhile = false;
+	//this isn't great naming but it works for now.
+	bool breakwhile2 = false;
 	int welcomeAnswer;
-	while (!breakwhile && cin.fail()) {
-		cout << "What would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
+	conf::Item item;
+	string price = "";
+	string type;
+	conf::ItemType itemtype;
+	while (!breakwhile && !cin.fail()) {
+		cout << "What would you like to do?\n1 - Add an Item\n2 - View Items\n- ";
 		cin >> welcomeAnswer;
 		//check if answer is valid
 		switch (welcomeAnswer) {
 
 		case 1:
-			break;
+			while (!breakwhile2 && !cin.fail()) {
+				cout << "What is the type of Item you want to add?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				cin >> type;
+				switch (atoi(type.c_str())) {
+				case 1:
+					itemtype = conf::topping;
+					breakwhile2 = true;
+					break;
+				case 2:
+					itemtype = conf::extra;
+					breakwhile2 = true;
+					break;
+				case 3:
+					itemtype = conf::potato;
+					breakwhile2 = true;
+					break;
+				default:
+					cout << endl << "Error: Not an Option" << endl;
+					break;
+				}
+
+			}
+		
+		cout << "What is the name of the item you would like to add?\n- ";
+		cin.clear()
+		getline(cin, item.name);
+
+		while (price == "" && !cin.fail()) {
+			cout << "What is the price of the item you would like to add?\n- ";
+			getline(cin, price);
+
+		}
+		item.price = strtod(price.c_str(), NULL);
+
+
+		conf::Add(item, itemtype);
+
+		breakwhile = true;
+		break;
 
 		case 2:
+			breakwhile = true;
 			break;
 
-		case 3:
-			break;
-
-		case 4:
-			break;
-			// not an option
 		default:
 			cout << "\nError: Invalid Option\n";
 			break;
-		}
+
+		}	
 	}
-	for (auto i : paths) {
-		cout << endl;
-		conf::Item item;
-		std::ifstream f(i);
-		json data = json::parse(f);
-		cout << data["name"];
-		cout << data["price"];
-	}
-
-
-
+	cout << endl << "Successfully Added Item";
+	system("pause");
 	quick_exit(0);
-
 }
 
 
@@ -211,7 +236,7 @@ void welcome(User user) {
 	bool breakwhile = false;
 	//loop forever until user types a correct answer
 	//Sets breakwhile to true when a correct answer is entered
-	while (!breakwhile && cin.fail()) {
+	while (!breakwhile && !cin.fail()) {
 		cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		cin >> welcomeAnswer;
 		//check if answer is valid
@@ -313,13 +338,15 @@ int main() {
 	else {
 		user = ReadJson(filename);
 	}
-	
-	
+
+
 	// start the welcome screen
 	welcome(user);
-	
 
 }
+
+
+
 
 
 
