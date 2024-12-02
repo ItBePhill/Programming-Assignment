@@ -35,28 +35,28 @@ TODO:		Key:
 #include "json.hpp"
 using json = nlohmann::json;
 //----------------------------------------------------------------
-using namespace std;
-
 void Config() {
-	cout << "----Config----" << endl;
+	std::cout << "----Config----" << std::endl;
 	bool breakwhile = false;
 	//this isn't great naming but it works for now.
 	bool breakwhile2 = false;
 	int welcomeAnswer;
+	std::string welcomeAnswerString;
 	conf::Item item;
-	string price = "";
-	string type;
+	std::string price = "";
+	std::string type;
 	conf::ItemType itemtype;
-	while (!breakwhile && !cin.fail()) {
-		cout << "What would you like to do?\n1 - Add an Item\n2 - View Items\n- ";
-		cin >> welcomeAnswer;
+	while (!breakwhile && !std::cin.fail()) {
+		std::cout << "What would you like to do?\n1 - Add an Item\n2 - View Items\n- ";
+		getline(std::cin, welcomeAnswerString);
+		welcomeAnswer = atoi(welcomeAnswerString.c_str());
 		//check if answer is valid
 		switch (welcomeAnswer) {
 
 		case 1:
-			while (!breakwhile2 && !cin.fail()) {
-				cout << "What is the type of Item you want to add?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
-				cin >> type;
+			while (!breakwhile2 && !std::cin.fail()) {
+				std::cout << "What is the type of Item you want to add?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				getline(std::cin, type);
 				switch (atoi(type.c_str())) {
 				case 1:
 					itemtype = conf::topping;
@@ -71,19 +71,19 @@ void Config() {
 					breakwhile2 = true;
 					break;
 				default:
-					cout << endl << "Error: Not an Option" << endl;
+					std::cout << std::endl << "Error: Not an Option" << std::endl;
 					break;
 				}
 
 			}
 		
-		cout << "What is the name of the item you would like to add?\n- ";
-		cin.clear()
-		getline(cin, item.name);
+		std::cout << "What is the name of the item you would like to add?\n- ";
+		std::cin.clear();
+		getline(std::cin, item.name);
 
-		while (price == "" && !cin.fail()) {
-			cout << "What is the price of the item you would like to add?\n- ";
-			getline(cin, price);
+		while (price == "" && !std::cin.fail()) {
+			std::cout << "What is the price of the item you would like to add?\n- ";
+			getline(std::cin, price);
 
 		}
 		item.price = strtod(price.c_str(), NULL);
@@ -99,12 +99,12 @@ void Config() {
 			break;
 
 		default:
-			cout << "\nError: Invalid Option\n";
+			std::cout << "\nError: Invalid Option\n";
 			break;
 
 		}	
 	}
-	cout << endl << "Successfully Added Item";
+	std::cout << std::endl << "Successfully Added Item";
 	system("pause");
 	quick_exit(0);
 }
@@ -113,13 +113,13 @@ void Config() {
 // User class, gets passed around, contains information about the user.
 class User {
 public:
-	string name = "";
+	std::string name = "";
 	double credits = 0.0;
 };
 
 //Update / Create JSON File, takes a user
 void UpdateJSON(User user) {
-	string filename = "users/" + user.name + ".json";
+	std::string filename = "users/" + user.name + ".json";
 	json jsonf;
 	std::ofstream f(filename);
 	jsonf["name"] = user.name;
@@ -127,12 +127,12 @@ void UpdateJSON(User user) {
 	f << jsonf;
 }
 //Read Json File, takes a filename
-User ReadJson(string filename) {
+User ReadJson(std::string filename) {
 	User user;
 	std::ifstream f(filename);
 	json data = json::parse(f);
-	cout << data["name"];
-	cout << data["credits"];
+	std::cout << data["name"];
+	std::cout << data["credits"];
 	user.name = data["name"];
 	//this is horrible and I hate it but idk how else to do 
 	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
@@ -146,23 +146,23 @@ User addCredits(User user) {
 	// Set Variables
 	const double minAnswer = 1.0;
 	const double maxAnswer = 999999999999999999.0;
-	string creditAnswerS;
+	std::string creditAnswerS;
 	double creditAnswerD;
-	string sure = "n";
+	std::string sure = "n";
 	char* notnum;
 	double credits = user.credits;
 
-	cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
+	std::cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
-			cout << endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
-			cin >> creditAnswerS;
-			// convert string to a double
+			std::cout << std::endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
+			std::getline(std::cin, creditAnswerS);
+			// convert std::string to a double
 			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum);
 			// make sure it's a number. reference 1
 			if (*notnum) {
-				cout << "Error: NAN";
+				std::cout << "Error: NAN";
 				continue;
 			} 
 			//make sure it's not too small
@@ -171,19 +171,19 @@ User addCredits(User user) {
 					return user;
 				}
 				else {
-					cout << endl << "Entry too small";
+					std::cout << std::endl << "Entry too small";
 					continue;
 				}
 				
 			}
 			//make sure it's not too big
 			else if (creditAnswerD > maxAnswer) {
-				cout << endl << "Entry too large";
+				std::cout << std::endl << "Entry too large";
 				continue;
 			}
 			
-			cout << endl << "Are you Sure?\nNew amount will be: " << credits + creditAnswerD << "\n(y / n)\n- ";
-			cin >> sure;
+			std::cout << std::endl << "Are you Sure?\nNew amount will be: " << credits + creditAnswerD << "\n(y / n)\n- ";
+			std::getline(std::cin, sure);
 			if (sure == "y") {
 				break;
 			}
@@ -192,7 +192,7 @@ User addCredits(User user) {
 				continue;
 			}
 			else {
-				cout << "Error: Invalid Option";
+				std::cout << "Error: Invalid Option";
 			}
 
 			
@@ -207,18 +207,18 @@ User addCredits(User user) {
 }
 User createOrder(User user) {
 	system("cls");
-	cout << "----Create A New Order-----";
+	std::cout << "----Create A New Order-----";
 	return user;
 }
 User viewRecent(User user) {
 	system("cls");
-	cout << "----View Recent Orders-----";
+	std::cout << "----View Recent Orders-----";
 	return user;
 
 }
 
 
-User createuser(string name,  double credits) {
+User createuser(std::string name,  double credits) {
 	system("cls");
 	//User not initialized so create a new User variable
 	User user = User();
@@ -233,12 +233,14 @@ User createuser(string name,  double credits) {
 void welcome(User user) {
 	system("cls");
 	int welcomeAnswer;
+	std::string welcomeAnswerString;
 	bool breakwhile = false;
 	//loop forever until user types a correct answer
 	//Sets breakwhile to true when a correct answer is entered
-	while (!breakwhile && !cin.fail()) {
-		cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
-		cin >> welcomeAnswer;
+	while (!breakwhile && !std::cin.fail()) {
+		std::cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
+		std::getline(std::cin, welcomeAnswerString);
+		welcomeAnswer = atoi(welcomeAnswerString.c_str());
 		//check if answer is valid
 		switch (welcomeAnswer) {
 			//add credits
@@ -259,11 +261,11 @@ void welcome(User user) {
 			break;
 			// quit
 		case 4:
-			cout << endl << "Bye! " << user.name << ", Come Back Soon!" << endl;
+			std::cout << std::endl << "Bye! " << user.name << ", Come Back Soon!" << std::endl;
 			quick_exit(0);
 			// not an option
 		default:
-			cout << "\nError: Invalid Option\n";
+			std::cout << "\nError: Invalid Option\n";
 			break;
 		}
 	}
@@ -276,43 +278,43 @@ void welcome(User user) {
 int main() {
 	// Initialize an empty user to avoid a memory error.
 	User user = User();
-	string name = "";
-	string filename;
+	std::string name = "";
+	std::string filename;
 	// check if folders exist that will hold settings if not create them
 
 	//check if config folder exists
-	if (!filesystem::exists("config")) {
-		filesystem::create_directory("./config");
+	if (!std::filesystem::exists("config")) {
+		std::filesystem::create_directory("./config");
 	}
 	//check if potatoes folder exists
-	if (!filesystem::exists("config/potatoes")) {
-		filesystem::create_directory("./config/potatoes");
+	if (!std::filesystem::exists("config/potatoes")) {
+		std::filesystem::create_directory("./config/potatoes");
 	}
 	//check if toppings folder exists
-	if (!filesystem::exists("config/toppings")) {
-		filesystem::create_directory("./config/toppings");
+	if (!std::filesystem::exists("config/toppings")) {
+		std::filesystem::create_directory("./config/toppings");
 	}
 	//check if extras folder exists
-	if (!filesystem::exists("config/extras")) {
-		filesystem::create_directory("./config/extras");
+	if (!std::filesystem::exists("config/extras")) {
+		std::filesystem::create_directory("./config/extras");
 	}
 	//check if users folder exists
-	if (!filesystem::exists("users")) {
-		filesystem::create_directory("./users");
+	if (!std::filesystem::exists("users")) {
+		std::filesystem::create_directory("./users");
 	}
 
 
 	//check if the user is initialized or not (if the json file exists)
-	cout << "----Startup----\n";
+	std::cout << "----Startup----\n";
 	while (name == "") {
-		cout << "What is your name?\nor enter a command use /help for a list of commands\n- ";
-		getline(cin, name);
+		std::cout << "What is your name?\nor enter a command use /help for a list of commands\n- ";
+		getline(std::cin, name);
 
 		filename = "users/" + name + ".json";
 		system("pause");
 		if (name.contains("/")) {
 			if (name.contains("help")) {
-				cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items";
+				std::cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items";
 				name = "";
 				continue;
 			}
@@ -329,8 +331,8 @@ int main() {
 	}
 
 
-	if (!filesystem::exists(filename)) {
-		cout << endl << "User doesn't exist";
+	if (!std::filesystem::exists(filename)) {
+		std::cout << std::endl << "User doesn't exist";
 		system("pause");
 		user = createuser(name, 0.0);
 
@@ -355,7 +357,7 @@ int main() {
 /*
 References:
 
-1 - https://stackoverflow.com/questions/4654636/how-to-determine-if-a-string-is-a-number-with-c
+1 - https://stackoverflow.com/questions/4654636/how-to-determine-if-a-std::string-is-a-number-with-c
 2 - Lohmann, N. (2023). JSON for Modern C++ (Version 3.11.3) [Computer software]. https://github.com/nlohmann
 
 */
