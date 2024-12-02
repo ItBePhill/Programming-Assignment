@@ -46,6 +46,8 @@ void Config() {
 	std::string price = "";
 	std::string type;
 	conf::ItemType itemtype;
+	std::vector<std::filesystem::path> paths;
+
 	while (!breakwhile && !std::cin.fail()) {
 		std::cout << "What would you like to do?\n1 - Add an Item\n2 - View Items\n- ";
 		getline(std::cin, welcomeAnswerString);
@@ -90,11 +92,33 @@ void Config() {
 
 
 		conf::Add(item, itemtype);
-
+		std::cout << std::endl << "Successfully Added Item";
 		breakwhile = true;
 		break;
 
 		case 2:
+			while (!breakwhile2 && !std::cin.fail()) {
+				std::cout << "What type of items do you want to view?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				getline(std::cin, type);
+				switch (atoi(type.c_str())) {
+				case 1:
+					itemtype = conf::topping;
+					breakwhile2 = true;
+					break;
+				case 2:
+					itemtype = conf::extra;
+					breakwhile2 = true;
+					break;
+				case 3:
+					itemtype = conf::potato;
+					breakwhile2 = true;
+					break;
+				default:
+					std::cout << std::endl << "Error: Not an Option" << std::endl;
+					break;
+				}
+			}
+			conf::View(itemtype);
 			breakwhile = true;
 			break;
 
@@ -104,7 +128,6 @@ void Config() {
 
 		}	
 	}
-	std::cout << std::endl << "Successfully Added Item";
 	system("pause");
 	quick_exit(0);
 }
