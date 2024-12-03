@@ -25,6 +25,7 @@ TODO:		Key:
 
 //includes
 #include <iostream>
+#include <functional>
 #include <fstream>
 #include <string>
 #include <conio.h>
@@ -82,7 +83,7 @@ User addCredits(User user) {
 	char* notnum;
 	double credits = user.credits;
 
-	std::cout <<  "-----Add Credits-----\nCurrent Credits: " << credits;
+	std::cout <<  "--------- Add Credits ---------\nCurrent Credits: " << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
@@ -141,7 +142,13 @@ User createOrder(User user) {
 	//Asks User what size potato they want to order
 	//ask if they want any toppings by looping over and over checking if they want to move on
 	//also ask for extras using the same approach
-	double totalprice;
+	double totalprice = 0;
+	conf::Item potato;
+	std::vector<conf::Item> toppings;
+	std::vector<conf::Item> extras;
+
+	std::string answerString;
+	int answerInt = -1;
 
 	std::vector<conf::Item> toppingsItems;
 	std::vector<conf::Item> extrasItems;
@@ -175,30 +182,186 @@ User createOrder(User user) {
 	}
 
 
-	for (auto i : toppingsItems) {
-		std:: cout << i.name << std::endl;
-	}
-	std::cout << std::endl;
-	for (auto i : extrasItems) {
-		std::cout << i.name << std::endl;
-	}
-	std::cout << std::endl;
-	for (auto i : potatoesItems) {
-		std::cout << i.name << std::endl;
-	}
-
-
-
-	system("pause");
 	system("cls");
-	std::cout << "----Create A New Order-----";
+	std::cout << "--------- Create A New Order ----------";
 
-	std::string orderAnswerString;
+
+	while (true) {
+		std::cout << std::endl << "What potato would you like to order?\n(Enter Number)" << std::endl;
+		int x = 0;
+		for (auto i : potatoesItems) {
+			std::cout << "----------------- " << x << " ------------------" << std::endl;
+			std::cout << "Name: " << i.name << std::endl;
+			std::cout << "Price: " << i.price;
+			std::cout << std::endl << "-------------------------------------" << std::endl;
+			x++;
+		}
+		std::cout << "\n- ";
+		std::getline(std::cin, answerString);
+
+		answerInt = atoi(answerString.c_str());
+
+		if (answerInt < 0 || answerInt > potatoesItems.size()) {
+			std::cout << "Error: Not an Option!" << std::endl;
+			continue;
+		}
+		else {
+			totalprice += potatoesItems[answerInt].price;
+			break;
+		}
+	}
+
+
+	while (true) {
+		system("cls");
+		std::cout << std::endl << "Would you like to add any toppings?\n(Enter Number)" << std::endl;
+		int x = 0;
+		for (auto i : toppingsItems) {
+			std::cout << "----------------- " << x << " ------------------" << std::endl;
+			std::cout << "Name: " << i.name << std::endl;
+			std::cout << "Price: " << i.price;
+			std::cout << std::endl << "-------------------------------------" << std::endl;
+			x++;
+		}
+		std::cout << "\n- ";
+		std::getline(std::cin, answerString);
+
+		answerInt = atoi(answerString.c_str());
+
+		if (answerInt < 0 || answerInt > toppingsItems.size()) {
+			std::cout << "Error: Not an Option!" << std::endl;
+			continue;
+		}
+		else {
+			
+			totalprice += toppingsItems[answerInt].price;
+			toppings.push_back(toppingsItems[answerInt]);
+			std::string cont;
+			bool stop;
+			while (true) {
+				std::cout << std::endl << "Continue?\n1 - Continue to extras\n2 - Add more toppings\n- ";
+				std::getline(std::cin, cont);
+
+				if (cont == "1") {
+					stop = true;
+					break;
+				}
+				else if (cont == "2") {
+					stop = false;
+					break;
+				}
+				else {
+					std::cout << std::endl << "Error: not an option!";
+					continue;
+				}
+				
+			}
+			if (stop) break;
+			else continue;
+		}
+		
+
+	}
+
+	while (true) {
+		system("cls");
+		std::cout << std::endl << "Would you like to add any Extras?\n(Enter Number)" << std::endl;
+		int x = 0;
+		for (auto i : extrasItems) {
+			std::cout << "----------------- " << x << " ------------------" << std::endl;
+			std::cout << "Name: " << i.name << std::endl;
+			std::cout << "Price: " << i.price;
+			std::cout << std::endl << "-------------------------------------" << std::endl;
+			x++;
+		}
+		std::cout << "\n- ";
+		std::getline(std::cin, answerString);
+
+		answerInt = atoi(answerString.c_str());
+
+		if (answerInt < 0 || answerInt > extrasItems.size()) {
+			std::cout << "Error: Not an Option!" << std::endl;
+			continue;
+		}
+		else {
+
+			totalprice += extrasItems[answerInt].price;
+			extras.push_back(extrasItems[answerInt]);
+			std::string cont;
+			bool stop;
+			while (true) {
+				std::cout << std::endl << "Continue?\n1 - Continue to payment\n2 - Add more extras\n- ";
+				std::getline(std::cin, cont);
+
+				if (cont == "1") {
+					stop = true;
+					break;
+				}
+				else if (cont == "2") {
+					stop = false;
+					break;
+				}
+				else {
+					std::cout << std::endl << "Error: not an option!";
+					continue;
+				}
+
+			}
+			if (stop) break;
+			else continue;
+		}
+
+	}
+
+
+	std::cout << "Total Price: " << totalprice << std::endl;
+	std::cout << "-------- Items --------" << std::endl; 
+
+
+	std::cout << "    ---- Potato ----" << std::endl;
+	std::cout << "----------------- " << potato.name << " ------------------" << std::endl;
+	std::cout << "Name: " << potato.name << std::endl;
+	std::cout << "Price: " << potato.price;
+	std::cout << std::endl << "-------------------------------------" << std::endl;
+	std::cout << "   ---- Toppings ----" << std::endl;
+
+
+	for (auto i : toppings) {
+		std::cout << "----------------- " << i.name << " ------------------" << std::endl;
+		std::cout << "Name: " << i.name << std::endl;
+		std::cout << "Price: " << i.price;
+		std::cout << std::endl << "-------------------------------------" << std::endl;
+	}
+
+
+	std::cout << "   ---- Extras ----" << std::endl;
+	for (auto i : toppings) {
+		std::cout << "----------------- " << i.name << " ------------------" << std::endl;
+		std::cout << "Name: " << i.name << std::endl;
+		std::cout << "Price: " << i.price;
+		std::cout << std::endl << "-------------------------------------" << std::endl;
+	}
+
+
+	if (totalprice > user.credits) {
+		std::cout << "Sorry you don't have enough credits";
+		system("pause");
+		quick_exit(0);
+	}
+	else {
+		user.credits -= totalprice;
+		std::cout << totalprice << " credits taken from your account\nNew Balance: " << user.credits;
+	}
+
+	UpdateJSON(user);
+	quick_exit(0);
+
+
 	return user;
 }
 User viewRecent(User user) {
 	system("cls");
-	std::cout << "----View Recent Orders-----";
+	std::cout << "-------- View Recent Orders ---------";
 	return user;
 
 }
@@ -224,7 +387,7 @@ void welcome(User user) {
 	//loop forever until user types a correct answer
 	//Sets breakwhile to true when a correct answer is entered
 	while (!breakwhile && !std::cin.fail()) {
-		std::cout << "----Welcome to Hot Potato!----\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
+		std::cout << "-------- Welcome to Hot Potato! --------\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
 		std::getline(std::cin, welcomeAnswerString);
 		welcomeAnswer = atoi(welcomeAnswerString.c_str());
 		//check if answer is valid
