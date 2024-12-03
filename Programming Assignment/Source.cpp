@@ -35,146 +35,8 @@ TODO:		Key:
 #include "json.hpp"
 using json = nlohmann::json;
 //----------------------------------------------------------------
-void Config() {
-	system("cls");
-	std::cout << "----Config----" << std::endl;
-	bool breakwhile = false;
-	//this isn't great naming but it works for now.
-	bool breakwhile2 = false;
-	int welcomeAnswer;
-	std::string welcomeAnswerString;
-	conf::Item item;
-	std::string price = "";
-	std::string type;
-	conf::ItemType itemtype;
-	std::vector<std::filesystem::path> paths;
 
-	while (!breakwhile && !std::cin.fail()) {
-		std::cout << "What would you like to do?\n1 - Add or edit an item\n2 - View Items\n- ";
-		getline(std::cin, welcomeAnswerString);
-		welcomeAnswer = atoi(welcomeAnswerString.c_str());
-		//check if answer is valid
-		switch (welcomeAnswer) {
-
-		case 1:
-			system("cls");
-			while (!breakwhile2 && !std::cin.fail()) {
-				std::cout << "What is the type of item you want to add or edit?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
-				getline(std::cin, type);
-				switch (atoi(type.c_str())) {
-				case 1:
-					itemtype = conf::topping;
-					breakwhile2 = true;
-					break;
-				case 2:
-					itemtype = conf::extra;
-					breakwhile2 = true;
-					break;
-				case 3:
-					itemtype = conf::potato;
-					breakwhile2 = true;
-					break;
-				default:
-					std::cout << std::endl << "Error: Not an Option" << std::endl;
-					break;
-				}
-
-			}
-		
-		std::cout << "What is the name of the item you would like to add or edit?\n- ";
-		getline(std::cin, item.name);
-
-		while (price == "" && !std::cin.fail()) {
-			std::cout << "What is the price of the item you would like to add or edit?\n- ";
-			getline(std::cin, price);
-
-		}
-		item.price = strtod(price.c_str(), NULL);
-
-
-		conf::Add(item, itemtype);
-		std::cout << std::endl << "Successfully Added / Edited Item";
-		breakwhile = true;
-		break;
-		
-		case 2:
-			system("cls");
-			while (!breakwhile2 && !std::cin.fail()) {
-				std::cout << "What type of items do you want to view?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
-				getline(std::cin, type);
-				switch (atoi(type.c_str())) {
-				case 1:
-					itemtype = conf::topping;
-					breakwhile2 = true;
-					break;
-				case 2:
-					itemtype = conf::extra;
-					breakwhile2 = true;
-					break;
-				case 3:
-					itemtype = conf::potato;
-					breakwhile2 = true;
-					break;
-				default:
-					std::cout << std::endl << "Error: Not an Option" << std::endl;
-					break;
-				}
-			}
-			paths = conf::View(itemtype);
-			
-			switch (itemtype) {
-			case conf::topping:
-				std::cout << std::endl << "--Toppings--" << std::endl;
-				break;
-			case conf::extra:
-				std::cout << std::endl << "--Extras--" << std::endl;
-				break;
-			case conf::potato:
-				std::cout << std::endl << "--Potatoes--" << std::endl;
-				break;
-
-			}
-			for (auto i : paths) {
-				std::cout << "-----------------------------------" << std::endl;
-				conf::Item item;
-				std::ifstream f(i);
-				json data = json::parse(f);
-				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << data["price"];
-				std::cout << std::endl << "-----------------------------------" << std::endl;
-
-			}
-			breakwhile = true;
-			break;
-
-		default:
-			std::cout << "\nError: Invalid Option\n";
-			break;
-
-		}	
-	}
-	system("pause");
-	bool breakwhile3 = false;
-
-	while (!breakwhile3 && !std::cin.fail()) {
-		std::cout << "Would you like to return to the config menu or quit?\n1 - return to config menu\n2 - Quit\n- ";
-		std::getline(std::cin, welcomeAnswerString);
-		welcomeAnswer = atoi(welcomeAnswerString.c_str());
-		//check if answer is valid
-		switch (welcomeAnswer) {
-			//add credits
-		case 1:
-			Config();
-			break;
-			//create an order
-		case 2:
-			quick_exit(0);
-		default:
-			std::cout << "\nError: Invalid Option\n";
-			break;
-		}
-	}
-}
+// got rid of (using namespace std;) as it was causing issues, mainly ambiguous function errors.
 
 
 // User class, gets passed around, contains information about the user.
@@ -211,8 +73,9 @@ User ReadJson(std::string filename) {
 User addCredits(User user) {
 	system("cls");
 	// Set Variables
-	const double minAnswer = 1.0;
+	const double minAnswer = 0.01;
 	const double maxAnswer = 999999999999999999.0;
+
 	std::string creditAnswerS;
 	double creditAnswerD;
 	std::string sure = "n";
@@ -273,8 +136,64 @@ User addCredits(User user) {
 
 }
 User createOrder(User user) {
+	//All options are dynamic and are assigned automatically when function is called, options are assigned by looping through the directory and filling a vector with Items from ConfHeader.h
+	//Questions are then asked based on this vector and checked based on this vector
+	//Asks User what size potato they want to order
+	//ask if they want any toppings by looping over and over checking if they want to move on
+	//also ask for extras using the same approach
+	double totalprice;
+
+	std::vector<conf::Item> toppingsItems;
+	std::vector<conf::Item> extrasItems;
+	std::vector<conf::Item> potatoesItems;
+	
+	
+	conf::Item item;
+	for (const auto& entry : std::filesystem::directory_iterator("./config/toppings")) {
+		std::ifstream f(entry.path().string());
+		json data = json::parse(f);
+		item.name = data["name"];
+		item.price = data["price"];
+
+		toppingsItems.push_back(item);
+	}
+	for (const auto& entry : std::filesystem::directory_iterator("./config/extras")) {
+		std::ifstream f(entry.path().string());
+		json data = json::parse(f);
+		item.name = data["name"];
+		item.price = data["price"];
+
+		extrasItems.push_back(item);
+	}
+	for (const auto& entry : std::filesystem::directory_iterator("./config/potatoes")) {
+		std::ifstream f(entry.path().string());
+		json data = json::parse(f);
+		item.name = data["name"];
+		item.price = data["price"];
+
+		potatoesItems.push_back(item);
+	}
+
+
+	for (auto i : toppingsItems) {
+		std:: cout << i.name << std::endl;
+	}
+	std::cout << std::endl;
+	for (auto i : extrasItems) {
+		std::cout << i.name << std::endl;
+	}
+	std::cout << std::endl;
+	for (auto i : potatoesItems) {
+		std::cout << i.name << std::endl;
+	}
+
+
+
+	system("pause");
 	system("cls");
 	std::cout << "----Create A New Order-----";
+
+	std::string orderAnswerString;
 	return user;
 }
 User viewRecent(User user) {
@@ -341,6 +260,163 @@ void welcome(User user) {
 	
 }
 
+void Config() {
+	system("cls");
+	std::cout << "----Config----" << std::endl;
+	bool breakwhile = false;
+	//this isn't great naming but it works for now.
+	bool breakwhile2 = false;
+	int welcomeAnswer;
+	std::string welcomeAnswerString;
+	conf::Item item;
+	std::string price = "";
+	std::string type;
+	conf::ItemType itemtype;
+	std::vector<std::filesystem::path> paths;
+
+	while (!breakwhile && !std::cin.fail()) {
+		std::cout << "What would you like to do?\n1 - Add or edit an item\n2 - View Items\n- ";
+		getline(std::cin, welcomeAnswerString);
+		welcomeAnswer = atoi(welcomeAnswerString.c_str());
+		//check if answer is valid
+		switch (welcomeAnswer) {
+
+		case 1:
+			system("cls");
+			while (!breakwhile2 && !std::cin.fail()) {
+				std::cout << "What is the type of item you want to add or edit?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				getline(std::cin, type);
+				switch (atoi(type.c_str())) {
+				case 1:
+					itemtype = conf::topping;
+					breakwhile2 = true;
+					break;
+				case 2:
+					itemtype = conf::extra;
+					breakwhile2 = true;
+					break;
+				case 3:
+					itemtype = conf::potato;
+					breakwhile2 = true;
+					break;
+				default:
+					std::cout << std::endl << "Error: Not an Option" << std::endl;
+					break;
+				}
+
+			}
+
+			std::cout << "What is the name of the item you would like to add or edit?\n- ";
+			getline(std::cin, item.name);
+
+			while (price == "" && !std::cin.fail()) {
+				std::cout << "What is the price of the item you would like to add or edit?\n- ";
+				getline(std::cin, price);
+
+			}
+			item.price = strtod(price.c_str(), NULL);
+
+
+			conf::Add(item, itemtype);
+			std::cout << std::endl << "Successfully Added / Edited Item";
+			breakwhile = true;
+			break;
+
+		case 2:
+			system("cls");
+			while (!breakwhile2 && !std::cin.fail()) {
+				std::cout << "What type of items do you want to view?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
+				getline(std::cin, type);
+				switch (atoi(type.c_str())) {
+				case 1:
+					itemtype = conf::topping;
+					breakwhile2 = true;
+					break;
+				case 2:
+					itemtype = conf::extra;
+					breakwhile2 = true;
+					break;
+				case 3:
+					itemtype = conf::potato;
+					breakwhile2 = true;
+					break;
+				default:
+					std::cout << std::endl << "Error: Not an Option" << std::endl;
+					break;
+				}
+			}
+			paths = conf::View(itemtype);
+
+			switch (itemtype) {
+			case conf::topping:
+				std::cout << std::endl << "--Toppings--" << std::endl;
+				break;
+			case conf::extra:
+				std::cout << std::endl << "--Extras--" << std::endl;
+				break;
+			case conf::potato:
+				std::cout << std::endl << "--Potatoes--" << std::endl;
+				break;
+
+			}
+			for (auto i : paths) {
+				std::cout << "-----------------------------------" << std::endl;
+				conf::Item item;
+				std::ifstream f(i);
+				json data = json::parse(f);
+				std::cout << "Name: " << data["name"] << std::endl;
+				std::cout << "Price: " << data["price"];
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+
+			}
+			breakwhile = true;
+			break;
+
+		default:
+			std::cout << "\nError: Invalid Option\n";
+			break;
+
+		}
+	}
+	system("pause");
+	//also not great naming but also fine for now
+	bool breakwhile3 = false;
+
+	while (!breakwhile3 && !std::cin.fail()) {
+		std::cout << "Would you like to return to the config menu or quit?\n1 - return to config menu\n2 - Quit\n- ";
+		std::getline(std::cin, welcomeAnswerString);
+		welcomeAnswer = atoi(welcomeAnswerString.c_str());
+		//check if answer is valid
+		switch (welcomeAnswer) {
+			//add credits
+		case 1:
+			Config();
+			break;
+			//create an order
+		case 2:
+			quick_exit(0);
+		default:
+			std::cout << "\nError: Invalid Option\n";
+			break;
+		}
+	}
+}
+
+
+
+void clearUser() {
+	std::cout << std::endl << "Removing users directory";
+	std::filesystem::remove_all("./users");
+	std::cout << std::endl << "Successfully Removed users";
+	quick_exit(0);
+}
+void clearItem() {
+	std::cout << std::endl << "Removing Items directory";
+	std::filesystem::remove_all("./config");
+	std::cout << std::endl << "Successfully Removed Items";
+	quick_exit(0);
+}
+
 
 int main() {
 	// Initialize an empty user to avoid a memory error.
@@ -389,10 +465,10 @@ int main() {
 				Config();
 			}
 			else if (name.contains("clearUser")) {
-				quick_exit(0);
+				clearUser();
 			}
 			else if (name.contains("clearItems")) {
-				quick_exit(0);
+				clearItem();
 			}
 			else {
 				std::cout << "Error: command doesn't exist" << std::endl;
@@ -418,6 +494,7 @@ int main() {
 	welcome(user);
 
 }
+
 
 
 
