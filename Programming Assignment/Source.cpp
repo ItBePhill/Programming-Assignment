@@ -49,11 +49,11 @@ public:
 };
 class Order {
 public: 
-	int time;
+	int time = -1;
 	conf::Item potato;
 	std::vector<conf::Item> toppings;
 	std::vector<conf::Item> extras;
-	double totalprice;
+	double totalprice = -1;
 };
 
 //Update / Create JSON File, takes a user
@@ -62,8 +62,7 @@ void UpdateJSON(User user, Order order) {
 	std::string filename = "users/" + user.name + ".json";
 	json jsonf;
 	std::ofstream f(filename);
-	if (!(order.potato.name == "")) {
-		jsonf["orders"];
+	if (!(order.totalprice == -1)) {
 	}
 	
 	jsonf["name"] = user.name;
@@ -144,7 +143,8 @@ User addCredits(User user) {
 		}
 		credits += creditAnswerD;
 		user.credits = credits;
-		UpdateJSON(user);
+		Order order;
+		UpdateJSON(user, order);
 		return user;
 	}
 	return user;
@@ -376,11 +376,11 @@ User createOrder(User user) {
 		user.credits -= totalprice;
 		std::cout << totalprice << " credits taken from your account\nNew Balance: " << user.credits << std::endl;
 	}
+	
 
 
-
-
-	UpdateJSON(user);
+	Order order;
+	UpdateJSON(user, order);
 
 	system("pause");
 	quick_exit(0);
@@ -401,7 +401,8 @@ User createuser(std::string name,  double credits) {
 	user.credits = credits; 
 	user.name = name;
 	//Also save to corresponding json file
-	UpdateJSON(user);
+	Order order;
+	UpdateJSON(user, order);
 	return user;
 }
 
