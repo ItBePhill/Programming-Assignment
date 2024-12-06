@@ -27,6 +27,7 @@ TODO:		Key:
 #include <iostream>
 #include <functional>
 #include <fstream>
+#include <iomanip>
 #include <string>
 #include <conio.h>
 #include <vector>
@@ -58,15 +59,13 @@ public:
 
 //Update / Create JSON File, takes a user
 void UpdateJSON(User user, Order order) {
-	//create an empty order to compare against
-	std::string filename = "users/" + user.name + ".json";
+
+	std::string filename = "users/" + user.name + "/user.json";
 	json jsonf;
 	std::ofstream f(filename);
-	if (!(order.totalprice == -1)) {
-	}
-	
 	jsonf["name"] = user.name;
-	jsonf["credits"] = user.credits;
+	//credits saved as string to keep the decimal points
+	jsonf["credits"] = std::to_string(user.credits);
 	f << jsonf;
 }
 //Read Json File, takes a filename
@@ -75,9 +74,9 @@ User ReadJson(std::string filename) {
 	std::ifstream f(filename);
 	json data = json::parse(f);
 	std::cout << data["name"];
-	std::cout << data["credits"];
+	std::cout << std::setprecision(4) << data["credits"];
 	user.name = data["name"];
-	//this is horrible and I hate it but idk how else to do 
+	//the value that comes from the json isn't a double or string, so we convert it to a string and then c string, then convert that to a double.
 	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
 	return user;
 }
@@ -96,14 +95,14 @@ User addCredits(User user) {
 	char* notnum;
 	double credits = user.credits;
 
-	std::cout <<  "--------- Add Credits ---------\nCurrent Credits: " << credits;
+	std::cout << "--------- Add Credits ---------\nCurrent Credits: " << std::setprecision(4) << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
 			std::cout << std::endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
 			std::getline(std::cin, creditAnswerS);
 			// convert std::string to a double
-			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum);
+			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum));
 			// make sure it's a number. reference 1
 			if (*notnum) {
 				std::cout << "Error: NAN";
@@ -126,7 +125,7 @@ User addCredits(User user) {
 				continue;
 			}
 			
-			std::cout << std::endl << "Are you Sure?\nNew amount will be: " << credits + creditAnswerD << "\n(y / n)\n- ";
+			std::cout << std::endl << "Are you Sure?\nNew amount will be: " << std::setprecision(4) << credits + creditAnswerD << "\n(y / n)\n- ";
 			std::getline(std::cin, sure);
 			if (sure == "y") {
 				break;
@@ -206,7 +205,7 @@ User createOrder(User user) {
 		for (auto i : potatoesItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << i.price;
+			std::cout << "Price: " << std::setprecision(4) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -238,7 +237,7 @@ User createOrder(User user) {
 		for (auto i : toppingsItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << i.price;
+			std::cout << "Price: " << std::setprecision(4) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -291,7 +290,7 @@ User createOrder(User user) {
 		for (auto i : extrasItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << i.price;
+			std::cout << "Price: " << std::setprecision(4) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -345,7 +344,7 @@ User createOrder(User user) {
 	std::cout << std::endl << "-------- Potato --------" << std::endl;
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Name: " << potato.name << std::endl;
-	std::cout << "Price: " << potato.price;
+	std::cout << "Price: " << std::setprecision(4) << potato.price;
 	std::cout << std::endl << "-----------------------------------" << std::endl;
 
 
@@ -353,7 +352,7 @@ User createOrder(User user) {
 	for (auto i : toppings) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << i.price;
+		std::cout << "Price: " << std::setprecision(4) << i.price;
 		std::cout << std::endl << "-----------------------------------" << std::endl;
 	}
 
@@ -362,7 +361,7 @@ User createOrder(User user) {
 	for (auto i : extras) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << i.price;
+		std::cout << "Price: " << std::setprecision(4) << i.price;
 		std::cout << std::endl << "-----------------------------------" << std::endl;
 	}
 
@@ -374,7 +373,7 @@ User createOrder(User user) {
 	}
 	else {
 		user.credits -= totalprice;
-		std::cout << totalprice << " credits taken from your account\nNew Balance: " << user.credits << std::endl;
+		std::cout << totalprice << " credits taken from your account\nNew Balance: " << std::setprecision(4) << user.credits << std::endl;
 	}
 	
 
@@ -402,6 +401,7 @@ User createuser(std::string name,  double credits) {
 	user.name = name;
 	//Also save to corresponding json file
 	Order order;
+	std::filesystem::create_directory("./users/"+name+"");
 	UpdateJSON(user, order);
 	return user;
 }
@@ -556,7 +556,7 @@ void Config() {
 				std::ifstream f(i);
 				json data = json::parse(f);
 				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << data["price"];
+				std::cout << "Price: " << std::setprecision(4) << data["price"];
 				std::cout << std::endl << "-----------------------------------" << std::endl;
 
 			}
@@ -644,7 +644,7 @@ int main() {
 		std::cout << std::endl << "use /help for a list of commands\n\nWhat is your name?\n- ";
 		getline(std::cin, name);
 
-		filename = "users/" + name + ".json";
+		filename = "./users/" + name + "/user.json";
 		system("pause");
 		if (name.contains("/")) {
 			if (name.contains("help")) {
