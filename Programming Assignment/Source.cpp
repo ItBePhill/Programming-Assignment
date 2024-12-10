@@ -18,8 +18,10 @@ TODO:		Key:
 - Create UpdateJson Function //
 - Finish Add Credits Function //
 - Create new Welcome function so the main function is just calling other functions //
-- Finish Create Order Function /
-- Finish View Recent Function
+- Finish Create Order Function //
+- Clean up /
+- Add Orders to users /
+- Finish View Recent Function 
 - remove the previous menu when transitioning, so it doesn't fill the cmd //
 */
 
@@ -40,6 +42,55 @@ using json = nlohmann::json;
 
 // got rid of (using namespace std;) as it was causing issues, mainly ambiguous function errors meaning
 //there are two functions under the same name and the compiler doesnt know what to do with it.
+
+
+/*Option Menu, show the user some options and check if the option they entered is correct and return the index of the answer, otherwise loop back and ask again;
+The returned int is from 0;
+----------------------------------------------------------------------------------------------------------------
+Options:
+Choices -  a Vector of std::strings that will be shown to the user (purely visual)
+Message - the message to show before asking, defaults to "What would you like to do?" if no message is set
+----------------------------------------------------------------------------------------------------------------
+Usage:
+switch (Option(choices, message)) {
+case 0:
+	*Code*
+case 1:
+	*Code*
+}
+----------------------------------------------------------------------------------------------------------------
+*/
+int Option(std::vector<std::string> choices, std::string message = "What would you like to do?") {
+	std::string answerString;
+	int answerInt;
+	
+	while (true) {
+		std::cout << message << std::endl;
+		int x = 0;
+		//loop over every choice and display it to the user;
+		for (auto i : choices) {
+			std::cout << x << " - " <<  i << std::endl;
+			x++;
+		}
+
+		std::cout << "- ";
+		//get users answer
+		std::getline(std::cin, answerString);
+		char* notnum;
+		//convert string answer to an integer for comparison
+		answerInt = strtol(answerString.c_str(), &notnum, 0);
+
+		//check if the answer was allowed, otherwise return the answer
+		if (answerInt > choices.size() || answerInt < 0 && *notnum) {
+			std::cout << "Sorry that's not an option!";
+			continue;
+		}
+		else {
+			return answerInt;
+		}
+	}
+	return -1;
+}
 
 
 // User class, gets passed around, contains information about the user.
@@ -65,7 +116,7 @@ void UpdateJSON(User user, Order order) {
 	std::ofstream f(filename);
 	jsonf["name"] = user.name;
 	//credits saved as string to keep the decimal points
-	jsonf["credits"] = std::to_string(user.credits);
+	jsonf["credits"] = user.credits;
 	f << jsonf;
 }
 //Read Json File, takes a filename
@@ -74,7 +125,7 @@ User ReadJson(std::string filename) {
 	std::ifstream f(filename);
 	json data = json::parse(f);
 	std::cout << data["name"];
-	std::cout << std::setprecision(4) << data["credits"];
+	std::cout << std::fixed << std::setprecision(2) << data["credits"];
 	user.name = data["name"];
 	//the value that comes from the json isn't a double or string, so we convert it to a string and then c string, then convert that to a double.
 	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
@@ -83,7 +134,7 @@ User ReadJson(std::string filename) {
 
 
 
-User addCredits(User user) {
+void addCredits(User &user) {
 	system("cls");
 	// Set Variables
 	const double minAnswer = 0.01;
@@ -95,14 +146,14 @@ User addCredits(User user) {
 	char* notnum;
 	double credits = user.credits;
 
-	std::cout << "--------- Add Credits ---------\nCurrent Credits: " << std::setprecision(4) << credits;
+	std::cout << "--------- Add Credits ---------\nCurrent Credits: " << std::fixed << std::setprecision(2) << credits;
 	//ask user to input an amount of credits then ask if they're sure and check if answer is valid by looping until the answer is yes.
 	while (sure != "y") {
 		while (true) {
 			std::cout << std::endl << "How many credits would you like to add? or type -1 to return to the menu\n- ";
 			std::getline(std::cin, creditAnswerS);
 			// convert std::string to a double
-			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum));
+			creditAnswerD = strtod(creditAnswerS.c_str(), &notnum);
 			// make sure it's a number. reference 1
 			if (*notnum) {
 				std::cout << "Error: NAN";
@@ -111,7 +162,7 @@ User addCredits(User user) {
 			//make sure it's not too small
 			if (creditAnswerD < minAnswer) {
 				if (creditAnswerD == -1) {
-					return user;
+					return;
 				}
 				else {
 					std::cout << std::endl << "Entry too small";
@@ -125,7 +176,7 @@ User addCredits(User user) {
 				continue;
 			}
 			
-			std::cout << std::endl << "Are you Sure?\nNew amount will be: " << std::setprecision(4) << credits + creditAnswerD << "\n(y / n)\n- ";
+			std::cout << std::endl << "Are you Sure?\nNew amount will be: " << std::fixed << std::setprecision(2) << credits + creditAnswerD << "\n(y / n)\n- ";
 			std::getline(std::cin, sure);
 			if (sure == "y") {
 				break;
@@ -144,12 +195,11 @@ User addCredits(User user) {
 		user.credits = credits;
 		Order order;
 		UpdateJSON(user, order);
-		return user;
 	}
-	return user;
 
 }
-User createOrder(User user) {
+//Create Order doesn't use Option as it uses different formatting for displaying options
+void createOrder(User &user) {
 	//All options are dynamic and are assigned automatically when function is called, options are assigned by looping through the directory and filling a vector with Items from ConfHeader.h
 	//Questions are then asked based on this vector and checked based on this vector
 	//Asks User what size potato they want to order
@@ -200,12 +250,12 @@ User createOrder(User user) {
 
 
 	while (true) {
-		std::cout << std::endl << "What potato would you like to order?\n(Enter Number)" << std::endl;
+		std::cout << std::endl << "What potato would you like to order? or type -1 to go back\n(Enter Number)" << std::endl;
 		int x = 0;
 		for (auto i : potatoesItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << std::setprecision(4) << i.price;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -218,6 +268,9 @@ User createOrder(User user) {
 			continue;
 		}
 		if (answerInt < 0 || answerInt > potatoesItems.size()) {
+			if (answerInt == -1) {
+				return;
+			}
 			std::cout << "Error: Not an Option!" << std::endl;
 			continue;
 		}
@@ -232,12 +285,12 @@ User createOrder(User user) {
 
 	while (true) {
 		system("cls");
-		std::cout << std::endl << "Would you like to add any toppings?\n(Enter Number)" << std::endl;
+		std::cout << std::endl << "Would you like to add any toppings? or type -1 to add no toppings\n(Enter Number)" << std::endl;
 		int x = 0;
 		for (auto i : toppingsItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << std::setprecision(4) << i.price;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -250,6 +303,9 @@ User createOrder(User user) {
 			continue;
 		}
 		if (answerInt < 0 || answerInt > toppingsItems.size()) {
+			if (answerInt == -1) {
+				break;
+			}
 			std::cout << "Error: Not an Option!" << std::endl;
 			continue;
 		}
@@ -285,12 +341,12 @@ User createOrder(User user) {
 
 	while (true) {
 		system("cls");
-		std::cout << std::endl << "Would you like to add any Extras?\n(Enter Number)" << std::endl;
+		std::cout << std::endl << "Would you like to add any Extras? or type -1 to add no extras\n(Enter Number)" << std::endl;
 		int x = 0;
 		for (auto i : extrasItems) {
 			std::cout << "----------------- " << x << " ------------------" << std::endl;
 			std::cout << "Name: " << i.name << std::endl;
-			std::cout << "Price: " << std::setprecision(4) << i.price;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 			std::cout << std::endl << "-------------------------------------" << std::endl;
 			x++;
 		}
@@ -303,6 +359,9 @@ User createOrder(User user) {
 			continue;
 		}
 		if (answerInt < 0 || answerInt > extrasItems.size()) {
+			if (answerInt == -1) {
+				break;
+			}
 			std::cout << "Error: Not an Option!" << std::endl;
 			continue;
 		}
@@ -338,13 +397,13 @@ User createOrder(User user) {
 
 	system("cls");
 	std::cout << "Total Price: " << totalprice << std::endl;
-	std::cout << "--------------- Items ----------------" << std::endl; 
+	std::cout << "--------------- Reciept ----------------" << std::endl; 
 
 
 	std::cout << std::endl << "-------- Potato --------" << std::endl;
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Name: " << potato.name << std::endl;
-	std::cout << "Price: " << std::setprecision(4) << potato.price;
+	std::cout << "Price: " << std::fixed << std::setprecision(2) << potato.price;
 	std::cout << std::endl << "-----------------------------------" << std::endl;
 
 
@@ -352,7 +411,7 @@ User createOrder(User user) {
 	for (auto i : toppings) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << std::setprecision(4) << i.price;
+		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 		std::cout << std::endl << "-----------------------------------" << std::endl;
 	}
 
@@ -361,7 +420,7 @@ User createOrder(User user) {
 	for (auto i : extras) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << std::setprecision(4) << i.price;
+		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 		std::cout << std::endl << "-----------------------------------" << std::endl;
 	}
 
@@ -369,11 +428,11 @@ User createOrder(User user) {
 	if (totalprice > user.credits) {
 		std::cout << "Sorry you don't have enough credits";
 		system("pause");
-		quick_exit(0);
+		return;
 	}
 	else {
 		user.credits -= totalprice;
-		std::cout << totalprice << " credits taken from your account\nNew Balance: " << std::setprecision(4) << user.credits << std::endl;
+		std::cout << totalprice << " credits taken from your account\nNew Balance: " << std::fixed << std::setprecision(2) << user.credits << std::endl;
 	}
 	
 
@@ -382,14 +441,11 @@ User createOrder(User user) {
 	UpdateJSON(user, order);
 
 	system("pause");
-	quick_exit(0);
-	return user;
+
 }
-User viewRecent(User user) {
+void viewRecent(User &user) {
 	system("cls");
 	std::cout << "-------- View Recent Orders ---------";
-	return user;
-
 }
 
 
@@ -399,7 +455,7 @@ User createuser(std::string name,  double credits) {
 	User user = User();
 	user.credits = credits; 
 	user.name = name;
-	//Also save to corresponding json file
+	//Also save to folder and json file
 	Order order;
 	std::filesystem::create_directory("./users/"+name+"");
 	UpdateJSON(user, order);
@@ -409,42 +465,27 @@ User createuser(std::string name,  double credits) {
 
 void welcome(User user) {
 	system("cls");
-	int welcomeAnswer;
-	std::string welcomeAnswerString;
-	bool breakwhile = false;
-	//loop forever until user types a correct answer
-	//Sets breakwhile to true when a correct answer is entered
-	while (!breakwhile && !std::cin.fail()) {
-		std::cout << "-------- Welcome to Hot Potato! --------\nHello! " << user.name << "\nWhat would you like to do?\n1 - Add Credits\n2 - Create an Order\n3 - View Recent Orders\n4 - Quit\n- ";
-		std::getline(std::cin, welcomeAnswerString);
-		welcomeAnswer = strtol(welcomeAnswerString.c_str(), NULL, 0);
-		//check if answer is valid
-		switch (welcomeAnswer) {
-			//add credits
-		case 1:
-			//set the user variable to what the fucntion return as this contains the updated credits.
-			user = addCredits(user);
-			breakwhile = true;
-			break;
-			//create an order
-		case 2:
-			user = createOrder(user);
-			breakwhile = true;
-			break;
-			//view recent orders
-		case 3:
-			user = viewRecent(user);
-			breakwhile = true;
-			break;
-			// quit
-		case 4:
-			std::cout << std::endl << "Bye! " << user.name << ", Come Back Soon!" << std::endl;
-			quick_exit(0);
-			// not an option
-		default:
-			std::cout << "\nError: Invalid Option\n";
-			break;
-		}
+	switch (Option(std::vector<std::string>{"Add Credits", "Create Order", "View Recent Orders", "Quit"}, "-------- Welcome to Hot Potato! --------\nHello! " + user.name + "\nWhat would you like to do?")) {
+				//add credits
+			case 0:
+				//set the user variable to what the function return as this contains the updated credits.
+				addCredits(user);
+				break;
+				//create an order
+			case 1:
+				createOrder(user);
+				break;
+				//view recent orders
+			case 2:
+				viewRecent(user);
+				break;
+				// quit
+			case 3:
+				std::cout << std::endl << "Bye! " << user.name << ", Come Back Soon!" << std::endl;
+				quick_exit(0);
+			case -1:
+				std::cout << "Something Went Wrong!";
+				break;
 	}
 	// call the function again to return the user to the welcome screen after choosing an option
 	welcome(user);
@@ -454,48 +495,17 @@ void welcome(User user) {
 void Config() {
 	system("cls");
 	std::cout << "----Config----" << std::endl;
-	bool breakwhile = false;
-	//this isn't great naming but it works for now.
-	bool breakwhile2 = false;
-	int welcomeAnswer;
-	std::string welcomeAnswerString;
 	conf::Item item;
 	std::string price = "";
 	std::string type;
 	conf::ItemType itemtype;
 	std::vector<std::filesystem::path> paths;
-
-	while (!breakwhile && !std::cin.fail()) {
-		std::cout << "What would you like to do?\n1 - Add or edit an item\n2 - View Items\n- ";
-		getline(std::cin, welcomeAnswerString);
-		welcomeAnswer = strtol(welcomeAnswerString.c_str(), NULL, 0);
-		//check if answer is valid
-		switch (welcomeAnswer) {
-
-		case 1:
-			system("cls");
-			while (!breakwhile2 && !std::cin.fail()) {
-				std::cout << "What is the type of item you want to add or edit?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
-				getline(std::cin, type);
-				switch (strtol(type.c_str(), NULL, 0)) {
-				case 1:
-					itemtype = conf::topping;
-					breakwhile2 = true;
-					break;
-				case 2:
-					itemtype = conf::extra;
-					breakwhile2 = true;
-					break;
-				case 3:
-					itemtype = conf::potato;
-					breakwhile2 = true;
-					break;
-				default:
-					std::cout << std::endl << "Error: Not an Option" << std::endl;
-					break;
-				}
-
-			}
+	switch (Option({ "Add or Edit an Item", "View Items" })) {
+	case 0:
+		system("cls");
+		switch (Option({ "Topping", "Extra", "Potato"}, "What is the type of item you want to add or edit?")) {
+		case 0:
+			itemtype = conf::topping;
 
 			std::cout << "What is the name of the item you would like to add or edit?\n- ";
 			getline(std::cin, item.name);
@@ -510,86 +520,159 @@ void Config() {
 
 			conf::Add(item, itemtype);
 			std::cout << std::endl << "Successfully Added / Edited Item";
-			breakwhile = true;
 			break;
 
+
+	
+		case 1:
+			itemtype = conf::extra;
+			conf::Add(item, itemtype);
+			std::cout << std::endl << "Successfully Added / Edited Item";
+			break;
 		case 2:
-			system("cls");
-			while (!breakwhile2 && !std::cin.fail()) {
-				std::cout << "What type of items do you want to view?\n1 - Topping\n2 - Extra\n3 - Potato\n- ";
-				getline(std::cin, type);
-				switch (strtol(type.c_str(), NULL, 0)) {
-				case 1:
-					itemtype = conf::topping;
-					breakwhile2 = true;
-					break;
-				case 2:
-					itemtype = conf::extra;
-					breakwhile2 = true;
-					break;
-				case 3:
-					itemtype = conf::potato;
-					breakwhile2 = true;
-					break;
-				default:
-					std::cout << std::endl << "Error: Not an Option" << std::endl;
-					break;
-				}
-			}
-			paths = conf::View(itemtype);
+			itemtype = conf::potato;
+			std::cout << "What is the name of the item you would like to add or edit?\n- ";
+			getline(std::cin, item.name);
 
-			switch (itemtype) {
-			case conf::topping:
-				std::cout << std::endl << "--Toppings--" << std::endl;
-				break;
-			case conf::extra:
-				std::cout << std::endl << "--Extras--" << std::endl;
-				break;
-			case conf::potato:
-				std::cout << std::endl << "--Potatoes--" << std::endl;
-				break;
+			while (price == "" && !std::cin.fail()) {
+				std::cout << "What is the price of the item you would like to add or edit?\n- ";
+				getline(std::cin, price);
 
 			}
-			for (auto i : paths) {
-				std::cout << "-----------------------------------" << std::endl;
-				conf::Item item;
-				std::ifstream f(i);
-				json data = json::parse(f);
-				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << std::setprecision(4) << data["price"];
-				std::cout << std::endl << "-----------------------------------" << std::endl;
-
-			}
-			breakwhile = true;
+			item.price = strtod(price.c_str(), NULL);
+			conf::Add(item, itemtype);
+			std::cout << std::endl << "Successfully Added / Edited Item";
 			break;
+		case -1:
+			std::cout << "Something Went Wrong!";
+			break;
+		
+		}
+		
 
-		default:
-			std::cout << "\nError: Invalid Option\n";
+
+
+	case 1:
+		system("cls");
+		switch (Option({ "Topping", "Extra", "Potato" }, "What type of items do you want to view?")) {
+		case 1:
+			itemtype = conf::topping;
+			break;
+		case 2:
+			itemtype = conf::extra;
+			break;
+		case 3:
+			itemtype = conf::potato;
+			break;
+		}
+		paths = conf::View(itemtype);
+
+		switch (itemtype) {
+		case conf::topping:
+			std::cout << std::endl << "--Toppings--" << std::endl;
+			break;
+		case conf::extra:
+			std::cout << std::endl << "--Extras--" << std::endl;
+			break;
+		case conf::potato:
+			std::cout << std::endl << "--Potatoes--" << std::endl;
 			break;
 
 		}
+		for (auto i : paths) {
+			std::cout << "-----------------------------------" << std::endl;
+			conf::Item item;
+			std::ifstream f(i);
+			json data = json::parse(f);
+			std::cout << "Name: " << data["name"] << std::endl;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+			std::cout << std::endl << "-----------------------------------" << std::endl;
+
+		}
+
+}
+	switch (Option(std::vector<std::string>{"Add or Edit an Item", "Quit"}, "What would you like to do?")) {
+
+	case 0:
+		system("cls");
+		switch (Option({ "Topping", "Extra", "Potato" }, "What is the type of item you want to add or edit ? ")) {
+		case 0:
+			itemtype = conf::topping;
+			break;
+		case 1:
+			itemtype = conf::extra;
+			break;
+		case 2:
+			itemtype = conf::potato;
+			break;
+		}
+		std::cout << "What is the name of the item you would like to add or edit?\n- ";
+		getline(std::cin, item.name);
+
+		while (price == "" && !std::cin.fail()) {
+			std::cout << "What is the price of the item you would like to add or edit?\n- ";
+			getline(std::cin, price);
+
+		}
+		item.price = strtod(price.c_str(), NULL);
+
+
+		conf::Add(item, itemtype);
+		std::cout << std::endl << "Successfully Added / Edited Item";
+		break;
+
+	case 1:
+		system("cls");
+		switch (Option({ "Topping", "Extra", "Potato" }, "What type of items do you want to view?")) {
+		case 0:
+			itemtype = conf::topping;
+			break;
+		case 1:
+			itemtype = conf::extra;
+			break;
+		case 2:
+			itemtype = conf::potato;
+			break;
+		}
+		paths = conf::View(itemtype);
+
+		switch (itemtype) {
+		case conf::topping:
+			std::cout << std::endl << "--Toppings--" << std::endl;
+			break;
+		case conf::extra:
+			std::cout << std::endl << "--Extras--" << std::endl;
+			break;
+		case conf::potato:
+			std::cout << std::endl << "--Potatoes--" << std::endl;
+			break;
+
+		}
+		for (auto i : paths) {
+			std::cout << "-----------------------------------" << std::endl;
+			conf::Item item;
+			std::ifstream f(i);
+			json data = json::parse(f);
+			std::cout << "Name: " << data["name"] << std::endl;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+			std::cout << std::endl << "-----------------------------------" << std::endl;
+
+		}
+
+
 	}
 	system("pause");
-	//also not great naming but also fine for now
-	bool breakwhile3 = false;
 
-	while (!breakwhile3 && !std::cin.fail()) {
-		std::cout << "Would you like to return to the config menu or quit?\n1 - return to config menu\n2 - Quit\n- ";
-		std::getline(std::cin, welcomeAnswerString);
-		welcomeAnswer = strtol(welcomeAnswerString.c_str(), NULL, 0);
-		//check if answer is valid
-		switch (welcomeAnswer) {
+
+
+	switch (Option({"Return to Config Menu", "Quit"}, "Would you like to return to the config menu or quit?")) {
 			//add credits
-		case 1:
+		case 0:
 			Config();
 			break;
 			//create an order
-		case 2:
-			quick_exit(0);
-		default:
-			std::cout << "\nError: Invalid Option\n";
-			break;
-		}
+		case 1:
+			return;
 	}
 }
 
@@ -639,9 +722,9 @@ int main() {
 
 
 	//check if the user is initialized or not (if the json file exists)
-	std::cout << "----Startup----\n";
+	std::cout << "------------ Startup ------------\n";
 	while (name == "") {
-		std::cout << std::endl << "use /help for a list of commands\n\nWhat is your name?\n- ";
+		std::cout << std::endl << "Enter a command (use /help for a list of commands) or \nEnter your name\n- ";
 		getline(std::cin, name);
 
 		filename = "./users/" + name + "/user.json";
