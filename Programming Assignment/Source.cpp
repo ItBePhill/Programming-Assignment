@@ -47,22 +47,7 @@ using json = nlohmann::json;
 //there are two functions under the same name and the compiler doesnt know what to do with it.
 
 
-/*Option Menu, show the user some options and check if the option they entered is correct and return the index of the answer, otherwise loop back and ask again;
-The returned int is from 0;
-----------------------------------------------------------------------------------------------------------------
-Options:
-Choices -  a Vector of std::strings that will be shown to the user (purely visual)
-Message - the message to show before asking, defaults to "What would you like to do?" if no message is set
-----------------------------------------------------------------------------------------------------------------
-Usage:
-switch (Option(choices, message)) {
-case 0:
-	*Code*
-case 1:
-	*Code*
-}
-----------------------------------------------------------------------------------------------------------------
-*/
+
 // User class, gets passed around, contains information about the user.
 class User {
 public:
@@ -73,13 +58,28 @@ public:
 class Order {
 public:
 	int time = -1;
-	std::string potato;
+	conf::Item potato;
 	std::vector<conf::Item> toppings;
 	std::vector<conf::Item> extras;
 	double totalprice = -1;
 };
 
-
+/*Option Menu, show the user some options and check if the option they entered is correct and return the index of the answer, otherwise loop back and ask again;
+The returned int is from 0;
+----------------------------------------------------------------------------------------------------------------
+Options:
+Choices *Required* -  a Vector of std::strings that will be shown to the user (purely visual)
+Message *Optional* - the message to show before asking, defaults to "What would you like to do?" if no message is set
+----------------------------------------------------------------------------------------------------------------
+Usage:
+switch (Option(choices, message)) {
+case 0:
+	*Code*
+case 1:
+	*Code*
+}
+----------------------------------------------------------------------------------------------------------------
+*/
 int Option(std::vector<std::string> choices, std::string message = "What would you like to do?") {
 	std::string answerString;
 	int answerInt;
@@ -112,6 +112,8 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 	return -1;
 }
 
+
+//create a json object for writing to a file. from an Order object.
 json CreateJsonFromOrder(Order order) {
 	std::time_t result = std::time(nullptr);
 	json jsono;
@@ -119,7 +121,7 @@ json CreateJsonFromOrder(Order order) {
 
 	const auto p1 = std::chrono::system_clock::now();
 	jsono["time"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
-	jsono["potato"] = order.potato;
+	jsono["potato"] = order.potato.name;
 	
 	int count = 0;
 	//for every topping  add its json file to the json object
@@ -144,19 +146,37 @@ json CreateJsonFromOrder(Order order) {
 
 
 
-//Update / Create JSON File, takes a user
-void UpdateJSON(User user, Order order) {
+//Update / Create JSON File, takes a user and order
+//Options:
+//User *Required* - the user to save.
+//Order *Optional* - the order to save.
+void UpdateJSON(User user, Order order = Order()) {
 
 	std::string filename = "users/" + user.name;
-	json jsonfu;
-	std::ofstream fu(filename+"/user.json");
+
+	std::fstream f(filename + "/orders.json");
+
+
 	jsonfu["name"] = user.name;
-	//credits saved as string to keep the decimal points
 	jsonfu["credits"] = user.credits;
 	if (order.totalprice != -1) {
-		std::ofstream fu(filename + "/orders.json");
+		if (std::filesystem::exists(filename + "/orders.json")) {
+			//json object
+			json jsond;
+			//read from json file
+			jsond = json::parse(f);
+
+			//Set the index in the write file of the current count + 1 to the order from the user
+			jsond[jsond["count"] + 1] = CreateJsonFromOrder(order);
+	
+
+			//set the
+			jsond["count"] += 1;
+			f << jsond;
+		}
+		
 	}
-	fu << jsonfu;
+	
 }
 //Read Json File, takes a filename
 User ReadJson(std::string filename) {
@@ -232,8 +252,7 @@ void addCredits(User &user) {
 		}
 		credits += creditAnswerD;
 		user.credits = credits;
-		Order order;
-		UpdateJSON(user, order);
+		UpdateJSON(user);
 	}
 
 }
@@ -315,8 +334,8 @@ void createOrder(User &user) {
 			continue;
 		}
 		else {
-			totalprice += potatoesItems[answerInt].price;
-			potato = potatoesItems[answerInt];
+			order.totalprice += potatoesItems[answerInt].price;
+			order.potato = potatoesItems[answerInt];
 
 			break;
 		}
@@ -351,8 +370,8 @@ void createOrder(User &user) {
 		}
 		else {
 			
-			totalprice += toppingsItems[answerInt].price;
-			toppings.push_back(toppingsItems[answerInt]);
+			order.totalprice += toppingsItems[answerInt].price;
+			order.toppings.push_back(toppingsItems[answerInt]);
 			std::string cont;
 			bool stop;
 			while (true) {
@@ -407,8 +426,8 @@ void createOrder(User &user) {
 		}
 		else {
 
-			totalprice += extrasItems[answerInt].price;
-			extras.push_back(extrasItems[answerInt]);
+			order.totalprice += extrasItems[answerInt].price;
+			order.extras.push_back(extrasItems[answerInt]);
 			std::string cont;
 			bool stop;
 			while (true) {
@@ -436,19 +455,19 @@ void createOrder(User &user) {
 	}
 
 	system("cls");
-	std::cout << "Total Price: " << totalprice << std::endl;
+	std::cout << "Total Price: " << order.totalprice << std::endl;
 	std::cout << "--------------- Reciept ----------------" << std::endl; 
 
 
 	std::cout << std::endl << "-------- Potato --------" << std::endl;
 	std::cout << "-----------------------------------" << std::endl;
-	std::cout << "Name: " << potato.name << std::endl;
+	std::cout << "Name: " << order.potato.name << std::endl;
 	std::cout << "Price: " << std::fixed << std::setprecision(2) << potato.price;
 	std::cout << std::endl << "-----------------------------------" << std::endl;
 
 
 	std::cout << std::endl << "--------- Toppings ---------" << std::endl;
-	for (auto i : toppings) {
+	for (auto i : order.toppings) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
 		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
@@ -457,7 +476,7 @@ void createOrder(User &user) {
 
 
 	std::cout << std::endl << "-------- Extras --------" << std::endl;
-	for (auto i : extras) {
+	for (auto i : order.extras) {
 		std::cout << "-----------------------------------" << std::endl;
 		std::cout << "Name: " << i.name << std::endl;
 		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
@@ -471,13 +490,12 @@ void createOrder(User &user) {
 		return;
 	}
 	else {
-		user.credits -= totalprice;
-		std::cout << totalprice << " credits taken from your account\nNew Balance: " << std::fixed << std::setprecision(2) << user.credits << std::endl;
+		user.credits -= order.totalprice;
+		std::cout << order.totalprice << " credits taken from your account\nNew Balance: " << std::fixed << std::setprecision(2) << user.credits << std::endl;
 	}
-	
 
 
-	Order order;
+
 
 	UpdateJSON(user, order);
 
@@ -489,17 +507,19 @@ void viewRecent(User &user) {
 	std::cout << "-------- View Recent Orders ---------";
 }
 
-
-User createuser(std::string name,  double credits) {
+//Create a User and return it
+//Options:
+//name *Required* - The name of the user
+//credits *Optional* - The Amount of credits to give the user.
+User createuser(std::string name,  double credits = 0) {
 	system("cls");
 	//User not initialized so create a new User variable
 	User user = User();
 	user.credits = credits; 
 	user.name = name;
 	//Also save to folder and json file
-	Order order;
 	std::filesystem::create_directory("./users/"+name+"");
-	UpdateJSON(user, order);
+	UpdateJSON(user);
 	return user;
 }
 
