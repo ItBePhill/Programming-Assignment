@@ -27,17 +27,20 @@ TODO:		Key:
 
 //includes
 #include <iostream>
-#include <functional>
+#include <chrono>
 #include <fstream>
 #include <iomanip>
 #include <string>
 #include <conio.h>
 #include <vector>
 #include <filesystem>
+#include <ctime>
 #include "./ConfHeader.h"
 //reference 2: using json.hpp header to read and write json files.
 #include "json.hpp"
 using json = nlohmann::json;
+
+
 //----------------------------------------------------------------
 
 // got rid of (using namespace std;) as it was causing issues, mainly ambiguous function errors meaning
@@ -60,6 +63,23 @@ case 1:
 }
 ----------------------------------------------------------------------------------------------------------------
 */
+// User class, gets passed around, contains information about the user.
+class User {
+public:
+	std::string name = "";
+	double credits = 0.00;
+};
+//Order class holds all the information for an order
+class Order {
+public:
+	int time = -1;
+	std::string potato;
+	std::vector<conf::Item> toppings;
+	std::vector<conf::Item> extras;
+	double totalprice = -1;
+};
+
+
 int Option(std::vector<std::string> choices, std::string message = "What would you like to do?") {
 	std::string answerString;
 	int answerInt;
@@ -92,32 +112,51 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 	return -1;
 }
 
+json CreateJsonFromOrder(Order order) {
+	std::time_t result = std::time(nullptr);
+	json jsono;
+	jsono["totalprice"] = order.totalprice;
 
-// User class, gets passed around, contains information about the user.
-class User {
-public:
-	std::string name = "";
-	double credits = 0.00;
-};
-class Order {
-public: 
-	int time = -1;
-	conf::Item potato;
-	std::vector<conf::Item> toppings;
-	std::vector<conf::Item> extras;
-	double totalprice = -1;
-};
+	const auto p1 = std::chrono::system_clock::now();
+	jsono["time"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+	jsono["potato"] = order.potato;
+	
+	int count = 0;
+	//for every topping  add its json file to the json object
+	for (auto i : order.toppings) {
+		jsono["toppings"][count] = ".\\config\\toppings\\" + order.toppings[count].name + ".json";
+		count++;
+	}
+
+	std::cout << jsono["toppings"];
+	count = 0;
+	for (auto i : order.extras) {
+		jsono["extras"][count] = ".\\config\\extras\\" + order.extras[count].name + ".json";
+		count++;
+	}
+
+	std::cout << jsono["extras"];
+
+	return jsono;
+
+}
+
+
+
 
 //Update / Create JSON File, takes a user
 void UpdateJSON(User user, Order order) {
 
-	std::string filename = "users/" + user.name + "/user.json";
-	json jsonf;
-	std::ofstream f(filename);
-	jsonf["name"] = user.name;
+	std::string filename = "users/" + user.name;
+	json jsonfu;
+	std::ofstream fu(filename+"/user.json");
+	jsonfu["name"] = user.name;
 	//credits saved as string to keep the decimal points
-	jsonf["credits"] = user.credits;
-	f << jsonf;
+	jsonfu["credits"] = user.credits;
+	if (order.totalprice != -1) {
+		std::ofstream fu(filename + "/orders.json");
+	}
+	fu << jsonfu;
 }
 //Read Json File, takes a filename
 User ReadJson(std::string filename) {
@@ -207,6 +246,7 @@ void createOrder(User &user) {
 	//also ask for extras using the same approach
 	double totalprice = 0;
 	conf::Item potato;
+	Order order;
 	std::vector<conf::Item> toppings;
 	std::vector<conf::Item> extras;
 
@@ -438,6 +478,7 @@ void createOrder(User &user) {
 
 
 	Order order;
+
 	UpdateJSON(user, order);
 
 	system("pause");
@@ -693,7 +734,7 @@ void clearItem() {
 
 
 int main() {
-	// Initialize an empty user to avoid a memory error.
+	// Initialize an empty user
 	User user = User();
 	std::string name = "";
 	std::string filename;
