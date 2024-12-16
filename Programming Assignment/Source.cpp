@@ -120,7 +120,7 @@ json CreateJsonFromOrder(Order order) {
 
 	const auto p1 = std::chrono::system_clock::now();
 	jsono["time"] = std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
-	jsono["potato"] = order.potato.name;
+	jsono["potato"] = ".\\config\\potatoes\\" + order.potato.name + ".json";
 	
 	int count = 0;
 	//for every topping  add its json file to the json object
@@ -153,35 +153,35 @@ void UpdateJSON(User user, Order order = Order()) {
 	json jsondu;
 	json jsondo;
 	//filename for users folder
-	std::string filename = "users/" + user.name;
-	//file stream for orders file
-	std::fstream fo(filename + "/orders.json");
+	std::string filename = "users\\" + user.name;
 	//file stream for user file
-	std::ofstream fu(filename + "/user.json");
+	std::ofstream fu(filename + "\\user.json");
 	jsondu["name"] = user.name;
 	jsondu["credits"] = user.credits;
 	//check if an order has been given
 	if (order.totalprice != -1) {
-		//check if the user already has an order file if not set the count to 0 as they haven't ordered anything, 
-		if (!std::filesystem::exists(filename + "/orders.json")) {
+		//check if the user already has an order file if not set the count to 0 as they haven't ordered anything,
+		if (!std::filesystem::exists(filename + "\\orders.json")) {
 			jsondo["count"] = 0;
-			//read from json file
 		}
 		else {
-			jsondo = json::parse(fo);
+			std::ifstream foread(filename + "\\orders.json");
+			jsondo = json::parse(foread);
+			foread.close();
 		}
 		int count = jsondo["count"];
 		//Increment the count(amount of orders saved) by 1
 		count++;
 		jsondo["count"] = count;
-		jsondo[count] = CreateJsonFromOrder(order);
-		
+		jsondo[std::to_string(count)] = CreateJsonFromOrder(order);
+		//write to orders file
+		std::ofstream fowrite(filename + "\\orders.json");
+		fowrite << jsondo;
+		fowrite.close();
 	}
-	//write to files
+	//write to user file
 	fu << jsondu;
-	fo << jsondo;
-
-	
+	fu.close();
 }
 //Read Json File, takes a filename
 User ReadJson(std::string filename) {
@@ -193,6 +193,7 @@ User ReadJson(std::string filename) {
 	user.name = data["name"];
 	//the value that comes from the json isn't a double or string, so we convert it to a string and then c string, then convert that to a double.
 	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
+	f.close();
 	return user;
 }
 
@@ -290,6 +291,7 @@ void createOrder(User &user) {
 		item.price = data["price"];
 
 		toppingsItems.push_back(item);
+		f.close();
 	}
 	for (const auto& entry : std::filesystem::directory_iterator("./config/extras")) {
 		std::ifstream f(entry.path().string());
@@ -298,6 +300,7 @@ void createOrder(User &user) {
 		item.price = data["price"];
 
 		extrasItems.push_back(item);
+		f.close();
 	}
 	for (const auto& entry : std::filesystem::directory_iterator("./config/potatoes")) {
 		std::ifstream f(entry.path().string());
@@ -306,6 +309,7 @@ void createOrder(User &user) {
 		item.price = data["price"];
 
 		potatoesItems.push_back(item);
+		f.close();
 	}
 
 
@@ -496,17 +500,38 @@ void createOrder(User &user) {
 		user.credits -= order.totalprice;
 		std::cout << order.totalprice << " credits taken from your account\nNew Balance: " << std::fixed << std::setprecision(2) << user.credits << std::endl;
 	}
-
-
-
-
 	UpdateJSON(user, order);
 
 	system("pause");
 
 }
+
+//View Recent Function - view all recent orders from the currently used account;
+//Options:
+//user *Required* - The user currently using the system;
 void viewRecent(User &user) {
 	system("cls");
+	json jsond;
+	//open orders file for current user
+	if (std::filesystem::exists("users\\" + user.name + "\\orders.json")) {
+		std::ifstream foread("users\\" + user.name + "\\orders.json");
+		jsond = json::parse(foread);
+		std::vector<std::chrono::sys_seconds> times;
+		for (auto i : jsond) {
+			if (i.type_name() != "number") {
+				auto time = i["time"];
+				times.push_back(std::chrono::sys_seconds(std::chrono::seconds(time)));
+			}
+		}
+		
+		system("pause");
+		
+	}
+	else {
+		std::cout << "You haven't created any orders yet!";
+		system("pause");
+		return;
+	}
 	std::cout << "-------- View Recent Orders ---------";
 }
 
@@ -652,7 +677,7 @@ void Config() {
 			std::cout << "Name: " << data["name"] << std::endl;
 			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
 			std::cout << std::endl << "-----------------------------------" << std::endl;
-
+			f.close();
 		}
 
 }
@@ -721,7 +746,7 @@ void Config() {
 			std::cout << "Name: " << data["name"] << std::endl;
 			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
 			std::cout << std::endl << "-----------------------------------" << std::endl;
-
+			f.close();
 		}
 
 
