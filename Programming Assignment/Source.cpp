@@ -115,7 +115,6 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 
 //create a json object for writing to a file. from an Order object.
 json CreateJsonFromOrder(Order order) {
-	std::time_t result = std::time(nullptr);
 	json jsono;
 	jsono["totalprice"] = order.totalprice;
 
@@ -126,14 +125,14 @@ json CreateJsonFromOrder(Order order) {
 	int count = 0;
 	//for every topping  add its json file to the json object
 	for (auto i : order.toppings) {
-		jsono["toppings"][count] = ".\\config\\toppings\\" + order.toppings[count].name + ".json";
+		jsono["toppings"][count] = ".\\config\\toppings\\" + i.name + ".json";
 		count++;
 	}
 
 	std::cout << jsono["toppings"];
 	count = 0;
 	for (auto i : order.extras) {
-		jsono["extras"][count] = ".\\config\\extras\\" + order.extras[count].name + ".json";
+		jsono["extras"][count] = ".\\config\\extras\\" + i.name + ".json";
 		count++;
 	}
 
@@ -151,31 +150,37 @@ json CreateJsonFromOrder(Order order) {
 //User *Required* - the user to save.
 //Order *Optional* - the order to save.
 void UpdateJSON(User user, Order order = Order()) {
-
+	json jsondu;
+	json jsondo;
+	//filename for users folder
 	std::string filename = "users/" + user.name;
-
-	std::fstream f(filename + "/orders.json");
-
-
-	jsonfu["name"] = user.name;
-	jsonfu["credits"] = user.credits;
+	//file stream for orders file
+	std::fstream fo(filename + "/orders.json");
+	//file stream for user file
+	std::ofstream fu(filename + "/user.json");
+	jsondu["name"] = user.name;
+	jsondu["credits"] = user.credits;
+	//check if an order has been given
 	if (order.totalprice != -1) {
-		if (std::filesystem::exists(filename + "/orders.json")) {
-			//json object
-			json jsond;
+		//check if the user already has an order file if not set the count to 0 as they haven't ordered anything, 
+		if (!std::filesystem::exists(filename + "/orders.json")) {
+			jsondo["count"] = 0;
 			//read from json file
-			jsond = json::parse(f);
-
-			//Set the index in the write file of the current count + 1 to the order from the user
-			jsond[jsond["count"] + 1] = CreateJsonFromOrder(order);
-	
-
-			//set the
-			jsond["count"] += 1;
-			f << jsond;
 		}
+		else {
+			jsondo = json::parse(fo);
+		}
+		int count = jsondo["count"];
+		//Increment the count(amount of orders saved) by 1
+		count++;
+		jsondo["count"] = count;
+		jsondo[count] = CreateJsonFromOrder(order);
 		
 	}
+	//write to files
+	fu << jsondu;
+	fo << jsondo;
+
 	
 }
 //Read Json File, takes a filename
@@ -340,8 +345,6 @@ void createOrder(User &user) {
 			break;
 		}
 	}
-
-
 	while (true) {
 		system("cls");
 		std::cout << std::endl << "Would you like to add any toppings? or type -1 to add no toppings\n(Enter Number)" << std::endl;
@@ -609,6 +612,7 @@ void Config() {
 			break;
 		
 		}
+		break;
 		
 
 
@@ -784,35 +788,57 @@ int main() {
 
 	//check if the user is initialized or not (if the json file exists)
 	std::cout << "------------ Startup ------------\n";
+	std::string title = "enter /command to use commands\n\nEnter your name\n- ";
+	bool commands = false;
 	while (name == "") {
-		std::cout << std::endl << "Enter a command (use /help for a list of commands) or \nEnter your name\n- ";
+		std::cout << std::endl << title;
 		getline(std::cin, name);
 
 		filename = "./users/" + name + "/user.json";
 		system("pause");
-		if (name.contains("/")) {
-			if (name.contains("help")) {
-				std::cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items";
-				name = "";
-				continue;
-			}
-			if (name.contains("config")) {
-				Config();
-			}
-			else if (name.contains("clearUser")) {
-				clearUser();
-			}
-			else if (name.contains("clearItems")) {
-				clearItem();
-			}
-			else {
-				std::cout << "Error: command doesn't exist" << std::endl;
-				name = "";
-				continue;
-			}
+		if (name == "/command") {
+			title = "Enter a Command\n- ";
+			std::cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items\nreturn - return to the name menu";
+			name = "";
+			commands = true;
+			continue;
+		}
+		if (name == "config" && commands) {
+			Config();
+			name = ""; 
+			commands = false;
+			continue;
+		}
+		else if (name == "clearUser" && commands) {
+			clearUser();
+			name = ""; 
+			commands = false;
+			continue;
+		}
+		else if (name == "clearItems" && commands) {
+			clearItem();
+			name = ""; 
+			commands = false;
+			continue;
+		}
+		else if (name == "return" && commands) {
+			name = ""; 
+			commands = false;
+			title = "enter / command to use commands\n\nEnter your name\n- ";
+			continue;
+		}
+		else if (name == "hello" || name == "hi") {
+			std::cout << "Hi!";
+			name = ""; 
+			commands = true;
+			continue;
+		}
+		else if (commands){
+			std::cout << "Error: command doesn't exist" << std::endl;
+			name = ""; commands = true;
+			continue;
 		}
 	}
-
 
 	if (!std::filesystem::exists(filename)) {
 		std::cout << std::endl << "User doesn't exist";
@@ -829,6 +855,8 @@ int main() {
 	welcome(user);
 
 }
+
+
 
 
 
