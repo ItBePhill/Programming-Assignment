@@ -20,8 +20,10 @@ TODO:		Key:
 - Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function //
 - Clean up /
-- Add Orders to users /
-- Finish View Recent Function 
+- Fix Config /
+- Make Name entry case sensitive /
+- Add Orders to users //
+- Finish View Recent Function //
 - remove the previous menu when transitioning, so it doesn't fill the cmd //
 */
 
@@ -40,14 +42,14 @@ TODO:		Key:
 #include "json.hpp"
 using json = nlohmann::json;
 
-
 //----------------------------------------------------------------
 
 // got rid of (using namespace std;) as it was causing issues, mainly ambiguous function errors meaning
 //there are two functions under the same name and the compiler doesnt know what to do with it.
 
 
-
+std::vector<conf::Item> ReadJsonItemMulti(std::string);
+conf::Item ReadJsonItem(std::string);
 // User class, gets passed around, contains information about the user.
 class User {
 public:
@@ -66,11 +68,11 @@ public:
 
 /*Option Menu, show the user some options and check if the option they entered is correct and return the index of the answer, otherwise loop back and ask again;
 The returned int is from 0;
-----------------------------------------------------------------------------------------------------------------
+
 Options:
 Choices *Required* -  a Vector of std::strings that will be shown to the user (purely visual)
 Message *Optional* - the message to show before asking, defaults to "What would you like to do?" if no message is set
-----------------------------------------------------------------------------------------------------------------
+
 Usage:
 switch (Option(choices, message)) {
 case 0:
@@ -78,7 +80,6 @@ case 0:
 case 1:
 	*Code*
 }
-----------------------------------------------------------------------------------------------------------------
 */
 int Option(std::vector<std::string> choices, std::string message = "What would you like to do?") {
 	std::string answerString;
@@ -102,7 +103,7 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 
 		//check if the answer was allowed, otherwise return the answer
 		if (answerInt > choices.size() || answerInt < 0 && *notnum) {
-			std::cout << "Sorry that's not an option!";
+			std::cout << "Sorry that's not an option!" << std::endl;
 			continue;
 		}
 		else {
@@ -113,7 +114,7 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 }
 
 
-//create a json object for writing to a file. from an Order object.
+//create a json object for writing to a file from an Order object.
 json CreateJsonFromOrder(Order order) {
 	json jsono;
 	jsono["totalprice"] = order.totalprice;
@@ -141,6 +142,24 @@ json CreateJsonFromOrder(Order order) {
 	return jsono;
 
 }
+//create an order object from a json object.
+Order CreateOrderFromJson(json jsono) {
+	Order order;
+	order.totalprice = jsono["totalprice"];
+	order.time = jsono["time"];
+	order.potato = ReadJsonItem(std::string(jsono["potato"]));
+	conf::Item item;
+	for (auto i : jsono["toppings"]) {
+		item = ReadJsonItem(i);
+		order.toppings.push_back(item);
+	}
+	for (auto i : jsono["extras"]) {
+		item = ReadJsonItem(i);
+		order.extras.push_back(item);
+	}
+	return order;
+}
+
 
 
 
@@ -149,7 +168,7 @@ json CreateJsonFromOrder(Order order) {
 //Options:
 //User *Required* - the user to save.
 //Order *Optional* - the order to save.
-void UpdateJSON(User user, Order order = Order()) {
+void UpdateJSON(User user, Order order) {
 	json jsondu;
 	json jsondo;
 	//filename for users folder
@@ -158,31 +177,47 @@ void UpdateJSON(User user, Order order = Order()) {
 	std::ofstream fu(filename + "\\user.json");
 	jsondu["name"] = user.name;
 	jsondu["credits"] = user.credits;
-	//check if an order has been given
-	if (order.totalprice != -1) {
-		//check if the user already has an order file if not set the count to 0 as they haven't ordered anything,
-		if (!std::filesystem::exists(filename + "\\orders.json")) {
-			jsondo["count"] = 0;
-		}
-		else {
-			std::ifstream foread(filename + "\\orders.json");
-			jsondo = json::parse(foread);
-			foread.close();
-		}
-		int count = jsondo["count"];
-		//Increment the count(amount of orders saved) by 1
-		count++;
-		jsondo["count"] = count;
-		jsondo[std::to_string(count)] = CreateJsonFromOrder(order);
-		//write to orders file
-		std::ofstream fowrite(filename + "\\orders.json");
-		fowrite << jsondo;
-		fowrite.close();
+	//check if the user already has an order file if not set the count to 0 as they haven't ordered anything,
+	if (!std::filesystem::exists(filename + "\\orders.json")) {
+		jsondo["count"] = 0;
 	}
+	else {
+		//file stream for reading
+		std::ifstream foread(filename + "\\orders.json");
+		//open file
+		jsondo = json::parse(foread);
+		foread.close();
+	}
+	int count = jsondo["count"];
+	//Increment the count(amount of orders saved) by 1
+	count++;
+	jsondo["count"] = count;
+	//create a json object from the order given
+	jsondo[std::to_string(count)] = CreateJsonFromOrder(order);
+	//write to orders file
+	std::ofstream fowrite(filename + "\\orders.json");
+	fowrite << jsondo;
+	fowrite.close();
 	//write to user file
 	fu << jsondu;
 	fu.close();
 }
+//overload without order
+void UpdateJSON(User user) {
+	json jsondu;
+	json jsondo;
+	//filename for users folder
+	std::string filename = "users\\" + user.name;
+	//file stream for user file
+	std::ofstream fu(filename + "\\user.json");
+	jsondu["name"] = user.name;
+	jsondu["credits"] = user.credits;
+	//write to user file
+	fu << jsondu;
+	fu.close();
+}
+
+
 //Read Json File, takes a filename
 User ReadJson(std::string filename) {
 	User user;
@@ -191,13 +226,33 @@ User ReadJson(std::string filename) {
 	std::cout << data["name"];
 	std::cout << std::fixed << std::setprecision(2) << data["credits"];
 	user.name = data["name"];
-	//the value that comes from the json isn't a double or string, so we convert it to a string and then c string, then convert that to a double.
-	user.credits = strtod(to_string(data["credits"]).c_str(), NULL);
+	//the value that comes from the json isn't a double so we convert it
+	user.credits = double(data["credits"]);
 	f.close();
 	return user;
 }
-
-
+std::vector<conf::Item> ReadJsonItemMulti(std::string filename) {
+	std::vector<conf::Item> items;
+	conf::Item item;
+	for (const auto& entry : std::filesystem::directory_iterator(filename)) {
+		std::ifstream f(entry.path().string());
+		json data = json::parse(f);
+		item.name = data["name"];
+		item.price = data["price"];
+		items.push_back(item);
+		f.close();
+	}
+	return items;
+}
+conf::Item ReadJsonItem(std::string filename) {
+	conf::Item item;
+	std::ifstream f(filename);
+	json data = json::parse(f);
+	item.name = data["name"];
+	item.price = data["price"];
+	f.close();
+	return item;
+}
 
 void addCredits(User &user) {
 	system("cls");
@@ -278,40 +333,9 @@ void createOrder(User &user) {
 	std::string answerString;
 	int answerInt = -1;
 
-	std::vector<conf::Item> toppingsItems;
-	std::vector<conf::Item> extrasItems;
-	std::vector<conf::Item> potatoesItems;
-	
-	
-	conf::Item item;
-	for (const auto& entry : std::filesystem::directory_iterator("./config/toppings")) {
-		std::ifstream f(entry.path().string());
-		json data = json::parse(f);
-		item.name = data["name"];
-		item.price = data["price"];
-
-		toppingsItems.push_back(item);
-		f.close();
-	}
-	for (const auto& entry : std::filesystem::directory_iterator("./config/extras")) {
-		std::ifstream f(entry.path().string());
-		json data = json::parse(f);
-		item.name = data["name"];
-		item.price = data["price"];
-
-		extrasItems.push_back(item);
-		f.close();
-	}
-	for (const auto& entry : std::filesystem::directory_iterator("./config/potatoes")) {
-		std::ifstream f(entry.path().string());
-		json data = json::parse(f);
-		item.name = data["name"];
-		item.price = data["price"];
-
-		potatoesItems.push_back(item);
-		f.close();
-	}
-
+	std::vector<conf::Item> toppingsItems = ReadJsonItemMulti("./config/toppings");
+	std::vector<conf::Item> extrasItems = ReadJsonItemMulti("./config/extras");
+	std::vector<conf::Item> potatoesItems = ReadJsonItemMulti("./config/potatoes");
 
 	system("cls");
 	std::cout << "--------- Create A New Order ----------";
@@ -393,7 +417,7 @@ void createOrder(User &user) {
 					break;
 				}
 				else {
-					std::cout << std::endl << "Error: not an option!";
+					std::cout << std::endl << "Error: not an option!" << std::endl;
 					continue;
 				}
 				
@@ -511,28 +535,55 @@ void createOrder(User &user) {
 //user *Required* - The user currently using the system;
 void viewRecent(User &user) {
 	system("cls");
+	std::cout << "-------- View Recent Orders ---------" << std::endl;
 	json jsond;
 	//open orders file for current user
 	if (std::filesystem::exists("users\\" + user.name + "\\orders.json")) {
 		std::ifstream foread("users\\" + user.name + "\\orders.json");
+		Order order;
 		jsond = json::parse(foread);
-		std::vector<std::chrono::sys_seconds> times;
 		for (auto i : jsond) {
 			if (i.type_name() != "number") {
-				auto time = i["time"];
-				times.push_back(std::chrono::sys_seconds(std::chrono::seconds(time)));
+				order = CreateOrderFromJson(i);
+				std::cout << std:: endl << "---------------" << std::chrono::sys_seconds(std::chrono::seconds(order.time)) << "----------------" << std::endl;
+				std::cout << "Total Price: " << std::fixed << std::setprecision(2) << order.totalprice << std::endl;
+
+				std::cout << std::endl << "-------- Potato --------" << std::endl;
+				std::cout << "-----------------------------------" << std::endl;
+				std::cout << "Name: " << order.potato.name << std::endl;
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << order.potato.price;
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+
+
+				std::cout << std::endl << "--------- Toppings ---------" << std::endl;
+				for (auto j : order.toppings) {
+					std::cout << "-----------------------------------" << std::endl;
+					std::cout << "Name: " << j.name << std::endl;
+					std::cout << "Price: " << std::fixed << std::setprecision(2) << j.price;
+					std::cout << std::endl << "-----------------------------------" << std::endl;
+				}
+
+
+				std::cout << std::endl << "-------- Extras --------" << std::endl;
+				for (auto j : order.extras) {
+					std::cout << "-----------------------------------" << std::endl;
+					std::cout << "Name: " << j.name << std::endl;
+					std::cout << "Price: " << std::fixed << std::setprecision(2) << j.price;
+					std::cout << std::endl << "-----------------------------------" << std::endl;
+				}
+				
+			}
+			else {
+				std::cout << std::endl << "Amount of orders = " << i << std::endl;
 			}
 		}
-		
 		system("pause");
-		
 	}
 	else {
 		std::cout << "You haven't created any orders yet!";
 		system("pause");
 		return;
 	}
-	std::cout << "-------- View Recent Orders ---------";
 }
 
 //Create a User and return it
@@ -554,7 +605,7 @@ User createuser(std::string name,  double credits = 0) {
 
 void welcome(User user) {
 	system("cls");
-	switch (Option(std::vector<std::string>{"Add Credits", "Create Order", "View Recent Orders", "Quit"}, "-------- Welcome to Hot Potato! --------\nHello! " + user.name + "\nWhat would you like to do?")) {
+	switch (Option({"Add Credits", "Create Order", "View Recent Orders", "Quit"}, "-------- Welcome to Hot Potato! --------\nHello! " + user.name + "\nWhat would you like to do?")) {
 				//add credits
 			case 0:
 				//set the user variable to what the function return as this contains the updated credits.
