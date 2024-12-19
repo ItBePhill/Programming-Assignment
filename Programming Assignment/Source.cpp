@@ -20,8 +20,8 @@ TODO:		Key:
 - Create new Welcome function so the main function is just calling other functions //
 - Finish Create Order Function //
 - Clean up /
-- Fix Config /
-- Make Name entry case sensitive /
+	- Add Comments to code /
+- Fix Config //
 - Add Orders to users //
 - Finish View Recent Function //
 - remove the previous menu when transitioning, so it doesn't fill the cmd //
@@ -37,6 +37,7 @@ TODO:		Key:
 #include <vector>
 #include <filesystem>
 #include <ctime>
+#include <random>
 #include "./ConfHeader.h"
 //reference 2: using json.hpp header to read and write json files.
 #include "json.hpp"
@@ -47,9 +48,10 @@ using json = nlohmann::json;
 // got rid of (using namespace std;) as it was causing issues, mainly ambiguous function errors meaning
 //there are two functions under the same name and the compiler doesnt know what to do with it.
 
-
+//function declaration so I don't have to move them around
 std::vector<conf::Item> ReadJsonItemMulti(std::string);
 conf::Item ReadJsonItem(std::string);
+
 // User class, gets passed around, contains information about the user.
 class User {
 public:
@@ -114,7 +116,9 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 }
 
 
-//create a json object for writing to a file from an Order object.
+//CreateJsonFromOrder - create a json object for writing to a file from an Order object.
+//Options:
+//order *Required* - The order to turn into a json object
 json CreateJsonFromOrder(Order order) {
 	json jsono;
 	jsono["totalprice"] = order.totalprice;
@@ -142,7 +146,9 @@ json CreateJsonFromOrder(Order order) {
 	return jsono;
 
 }
-//create an order object from a json object.
+//CreateOrderFromJson - create an order object from a json object.
+//Options:
+//jsono *Required* - The Json object to convert to an order
 Order CreateOrderFromJson(json jsono) {
 	Order order;
 	order.totalprice = jsono["totalprice"];
@@ -218,7 +224,9 @@ void UpdateJSON(User user) {
 }
 
 
-//Read Json File, takes a filename
+//ReadJson - Read User Json File, takes a filename
+//Options:
+//filename *Required* - the path to the file
 User ReadJson(std::string filename) {
 	User user;
 	std::ifstream f(filename);
@@ -231,6 +239,9 @@ User ReadJson(std::string filename) {
 	f.close();
 	return user;
 }
+//ReadJsonItemMulti - Loop over a directory and read each item json
+//Options:
+//filename *Required* - The path to the folder
 std::vector<conf::Item> ReadJsonItemMulti(std::string filename) {
 	std::vector<conf::Item> items;
 	conf::Item item;
@@ -244,6 +255,9 @@ std::vector<conf::Item> ReadJsonItemMulti(std::string filename) {
 	}
 	return items;
 }
+//ReadJsonItem - Read a single item json file
+//Options:
+//filename *Required* - The path to the item file
 conf::Item ReadJsonItem(std::string filename) {
 	conf::Item item;
 	std::ifstream f(filename);
@@ -253,7 +267,9 @@ conf::Item ReadJsonItem(std::string filename) {
 	f.close();
 	return item;
 }
-
+//addCredits - Allow the user to add credits
+//Options:
+//user *Required* - the user to add the credits to
 void addCredits(User &user) {
 	system("cls");
 	// Set Variables
@@ -317,6 +333,9 @@ void addCredits(User &user) {
 	}
 
 }
+//createOrder - Create and Order
+//Options:
+//user *Required* - The User that is creating the order
 //Create Order doesn't use Option as it uses different formatting for displaying options
 void createOrder(User &user) {
 	//All options are dynamic and are assigned automatically when function is called, options are assigned by looping through the directory and filling a vector with Items from ConfHeader.h
@@ -586,7 +605,7 @@ void viewRecent(User &user) {
 	}
 }
 
-//Create a User and return it
+//createuser - Create a User and return it
 //Options:
 //name *Required* - The name of the user
 //credits *Optional* - The Amount of credits to give the user.
@@ -602,10 +621,22 @@ User createuser(std::string name,  double credits = 0) {
 	return user;
 }
 
-
+//welcome - the welcome function gives the user the welcome menu and calls the other functions
+//Options:
+//user *Required* - The current logged in user
 void welcome(User user) {
 	system("cls");
-	switch (Option({"Add Credits", "Create Order", "View Recent Orders", "Quit"}, "-------- Welcome to Hot Potato! --------\nHello! " + user.name + "\nWhat would you like to do?")) {
+	std::vector <std::string> messages = {"Welcome!", "Hello!", "Live Long and Prosper\nWelcome!", "Hey you you're finally awake\nWelcome!", "Keep the change, ya filthy animal!\nWelcome!", "Also try Minecraft!\nWelcome!", "Han didn't shoot first!\nWelcome!", "I guess you guys aren't ready for that yet. But your kids are gonna love it\nWelcome!", "When you get to Hell, Tell 'em Viper sent you\nWelcome!", "If my grandmother had wheels she would have been a bike\nWelcome!", "Well excuse me, princess\nWelcome!"};
+	int min = 0;
+	int max = 10;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distrib(min, max);
+
+	std::string message = "-------- Hot Potato! ---------\n{randommsg} " + user.name +"\n";
+	message.replace(message.find("{randommsg}"), sizeof("{randommsg}") - 1, messages[distrib(gen)]);
+	
+	switch (Option({"Add Credits", "Create Order", "View Recent Orders", "Quit"}, message)) {
 				//add credits
 			case 0:
 				//set the user variable to what the function return as this contains the updated credits.
@@ -631,7 +662,7 @@ void welcome(User user) {
 	welcome(user);
 	
 }
-
+//Config - Config options e.g. adding a new item, or viewing items
 void Config() {
 	system("cls");
 	std::cout << "----Config----" << std::endl;
@@ -696,112 +727,56 @@ void Config() {
 	case 1:
 		system("cls");
 		switch (Option({ "Topping", "Extra", "Potato" }, "What type of items do you want to view?")) {
-		case 1:
+		case 0:
 			itemtype = conf::topping;
+			paths = conf::View(itemtype);
+			std::cout << std::endl << "--Toppings--" << std::endl;
+			for (auto i : paths) {
+				std::cout << "-----------------------------------" << std::endl;
+				conf::Item item;
+				std::ifstream f(i);
+				json data = json::parse(f);
+				std::cout << "Name: " << data["name"] << std::endl;
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+				f.close();
+			}
+			break;
+		case 1:
+			itemtype = conf::extra;
+			paths = conf::View(itemtype);
+			std::cout << std::endl << "--Extras--" << std::endl;
+			for (auto i : paths) {
+				std::cout << "-----------------------------------" << std::endl;
+				conf::Item item;
+				std::ifstream f(i);
+				json data = json::parse(f);
+				std::cout << "Name: " << data["name"] << std::endl;
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+				f.close();
+			}
 			break;
 		case 2:
-			itemtype = conf::extra;
-			break;
-		case 3:
 			itemtype = conf::potato;
-			break;
-		}
-		paths = conf::View(itemtype);
-
-		switch (itemtype) {
-		case conf::topping:
-			std::cout << std::endl << "--Toppings--" << std::endl;
-			break;
-		case conf::extra:
-			std::cout << std::endl << "--Extras--" << std::endl;
-			break;
-		case conf::potato:
+			paths = conf::View(itemtype);
 			std::cout << std::endl << "--Potatoes--" << std::endl;
+			for (auto i : paths) {
+				std::cout << "-----------------------------------" << std::endl;
+				conf::Item item;
+				std::ifstream f(i);
+				json data = json::parse(f);
+				std::cout << "Name: " << data["name"] << std::endl;
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << std::endl << "-----------------------------------" << std::endl;
+				f.close();
+			}
 			break;
-
 		}
-		for (auto i : paths) {
-			std::cout << "-----------------------------------" << std::endl;
-			conf::Item item;
-			std::ifstream f(i);
-			json data = json::parse(f);
-			std::cout << "Name: " << data["name"] << std::endl;
-			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
-			std::cout << std::endl << "-----------------------------------" << std::endl;
-			f.close();
-		}
+		
+	
 
 }
-	switch (Option(std::vector<std::string>{"Add or Edit an Item", "Quit"}, "What would you like to do?")) {
-
-	case 0:
-		system("cls");
-		switch (Option({ "Topping", "Extra", "Potato" }, "What is the type of item you want to add or edit ? ")) {
-		case 0:
-			itemtype = conf::topping;
-			break;
-		case 1:
-			itemtype = conf::extra;
-			break;
-		case 2:
-			itemtype = conf::potato;
-			break;
-		}
-		std::cout << "What is the name of the item you would like to add or edit?\n- ";
-		getline(std::cin, item.name);
-
-		while (price == "" && !std::cin.fail()) {
-			std::cout << "What is the price of the item you would like to add or edit?\n- ";
-			getline(std::cin, price);
-
-		}
-		item.price = strtod(price.c_str(), NULL);
-
-
-		conf::Add(item, itemtype);
-		std::cout << std::endl << "Successfully Added / Edited Item";
-		break;
-
-	case 1:
-		system("cls");
-		switch (Option({ "Topping", "Extra", "Potato" }, "What type of items do you want to view?")) {
-		case 0:
-			itemtype = conf::topping;
-			break;
-		case 1:
-			itemtype = conf::extra;
-			break;
-		case 2:
-			itemtype = conf::potato;
-			break;
-		}
-		paths = conf::View(itemtype);
-
-		switch (itemtype) {
-		case conf::topping:
-			std::cout << std::endl << "--Toppings--" << std::endl;
-			break;
-		case conf::extra:
-			std::cout << std::endl << "--Extras--" << std::endl;
-			break;
-		case conf::potato:
-			std::cout << std::endl << "--Potatoes--" << std::endl;
-			break;
-
-		}
-		for (auto i : paths) {
-			std::cout << "-----------------------------------" << std::endl;
-			conf::Item item;
-			std::ifstream f(i);
-			json data = json::parse(f);
-			std::cout << "Name: " << data["name"] << std::endl;
-			std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
-			std::cout << std::endl << "-----------------------------------" << std::endl;
-			f.close();
-		}
-
-
-	}
 	system("pause");
 
 
@@ -813,18 +788,19 @@ void Config() {
 			break;
 			//create an order
 		case 1:
-			return;
+			quick_exit(0);
 	}
 }
 
 
-
+//clearUser - Delete the user directory
 void clearUser() {
 	std::cout << std::endl << "Removing users directory";
 	std::filesystem::remove_all("./users");
 	std::cout << std::endl << "Successfully Removed users";
 	quick_exit(0);
 }
+//clearItem - Delete the config directory
 void clearItem() {
 	std::cout << std::endl << "Removing Items directory";
 	std::filesystem::remove_all("./config");
@@ -832,7 +808,9 @@ void clearItem() {
 	quick_exit(0);
 }
 
-
+//main - The function that starts when the program starts, makes sure everything is in order,
+//for example checks if all folders exist
+//also creates and check for user then finally calls welcome
 int main() {
 	// Initialize an empty user
 	User user = User();
@@ -860,6 +838,7 @@ int main() {
 	if (!std::filesystem::exists("users")) {
 		std::filesystem::create_directory("./users");
 	}
+
 
 
 	//check if the user is initialized or not (if the json file exists)

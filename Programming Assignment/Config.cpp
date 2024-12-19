@@ -22,7 +22,6 @@ TODO:		Key:
 #include <vector>
 using json = nlohmann::json;
 using namespace std;
-using namespace conf;
 
 //Take in an item (name and price) and a type and save the new item.
 int conf::Add(Item item, conf::ItemType type) {
