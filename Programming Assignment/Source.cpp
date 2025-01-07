@@ -670,6 +670,7 @@ void welcome(User user) {
 	//replace {randommsg} with a random message chosen by random number generator above
 	message.replace(message.find("{randommsg}"), sizeof("{randommsg}") - 1, messages[distrib(gen)]);
 	//---------------------------------------------------------
+	
 	//show the main welcome menu
 	switch (Option({"Add Credits", "Create Order", "View Recent Orders", "Quit"}, message)) {
 				//add credits
