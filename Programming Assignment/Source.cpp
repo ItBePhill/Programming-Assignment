@@ -102,8 +102,10 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 		//convert string answer to an integer for comparison
 		answerInt = strtol(answerString.c_str(), &notnum, 0);
 		//check if the answer was allowed, otherwise return the answer
-		if ((answerInt > choices.size()+1 || answerInt < 0) && &notnum) {
+		if ((answerInt > choices.size() || answerInt < 1) && &notnum) {
 			std::cout << std::endl << "Sorry that's not an option!" << std::endl;
+			system("pause");
+			system("cls");
 			continue;
 		}
 		else {
@@ -148,25 +150,42 @@ json CreateJsonFromOrder(Order order) {
 //jsono *Required* - The Json object to convert to an order
 Order CreateOrderFromJson(json jsono) {
 	Order order;
+	conf::Item blankItem;
+	blankItem.name = "Item not found";
 	//set time and totalprice
 	order.totalprice = jsono["totalprice"];
 	order.time = jsono["time"];
 	//set potato to the potato file that is referenced in the json file
-	order.potato = ReadJsonItem(std::string(jsono["potato"]));
+	if (std::filesystem::exists(jsono["potato"])) {
+		order.potato = ReadJsonItem(std::string(jsono["potato"]));
+	}
+	else {
+		order.potato = blankItem;
+	}
 	conf::Item item;
 	//add toppings
 	for (auto i : jsono["toppings"]) {
-		//get the information from the file
-		item = ReadJsonItem(i);
-		//add it to the array.
-		order.toppings.push_back(item);
+		if (std::filesystem::exists((i))) {
+			//get the information from the file
+			item = ReadJsonItem(i);
+			//add it to the array.
+			order.toppings.push_back(item);
+		}
+		else {
+			order.toppings.push_back(blankItem);
+		}
 	}
 	//add extras
 	for (auto i : jsono["extras"]) {
-		//get the information from the file
-		item = ReadJsonItem(i);
-		//add it to the array
-		order.extras.push_back(item);
+		if (std::filesystem::exists((i))) {
+			//get the information from the file
+			item = ReadJsonItem(i);
+			//add it to the array.
+			order.extras.push_back(item);
+		}
+		else {
+			order.extras.push_back(blankItem);
+		}
 	}
 
 	//return the resulting order
@@ -359,11 +378,9 @@ void createOrder(User &user) {
 	//Asks User what size potato they want to order
 	//ask if they want any toppings by looping over and over checking if they want to move on
 	//also ask for extras using the same approach
-	double totalprice = 0;
-	conf::Item potato;
+
+	//class to hold users order
 	Order order;
-	std::vector<conf::Item> toppings;
-	std::vector<conf::Item> extras;
 
 	std::string answerString;
 	int answerInt = -1;
@@ -371,7 +388,11 @@ void createOrder(User &user) {
 	std::vector<conf::Item> toppingsItems = ReadJsonItemMulti("./config/toppings");
 	std::vector<conf::Item> extrasItems = ReadJsonItemMulti("./config/extras");
 	std::vector<conf::Item> potatoesItems = ReadJsonItemMulti("./config/potatoes");
-
+	if (toppingsItems.empty() || extrasItems.empty() || potatoesItems.empty()) {
+		std::cout << std::endl << "There isn't anything to order!\nThere must be at least 1 potato, topping and extra to complete an order" << std::endl;
+		system("pause");
+		return;
+	}
 	system("cls");
 	std::cout << "--------- Create A New Order ----------";
 
@@ -533,28 +554,34 @@ void createOrder(User &user) {
 	system("cls");
 	std::cout << "--------------- Reciept ----------------" << std::endl; 
 
+
+	
 	std::cout << std::endl << "-------- Potato --------" << std::endl;
 	std::cout << "-----------------------------------" << std::endl;
 	std::cout << "Name: " << order.potato.name << std::endl;
 	std::cout << "Price: " << std::fixed << std::setprecision(2) << order.potato.price;
 	std::cout << std::endl << "-----------------------------------" << std::endl;
 
-
-	std::cout << std::endl << "--------- Toppings ---------" << std::endl;
-	for (auto i : order.toppings) {
-		std::cout << "-----------------------------------" << std::endl;
-		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
-		std::cout << std::endl << "-----------------------------------" << std::endl;
+	//check if the user picked any toppings
+	if (!order.toppings.empty()) {
+		std::cout << std::endl << "--------- Toppings ---------" << std::endl;
+		for (auto i : order.toppings) {
+			std::cout << "-----------------------------------" << std::endl;
+			std::cout << "Name: " << i.name << std::endl;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
+			std::cout << std::endl << "-----------------------------------" << std::endl;
+		}
 	}
 
-
-	std::cout << std::endl << "-------- Extras --------" << std::endl;
-	for (auto i : order.extras) {
-		std::cout << "-----------------------------------" << std::endl;
-		std::cout << "Name: " << i.name << std::endl;
-		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
-		std::cout << std::endl << "-----------------------------------" << std::endl;
+	//check if the user picked any extras
+	if (!order.extras.empty()) {
+		std::cout << std::endl << "-------- Extras --------" << std::endl;
+		for (auto i : order.extras) {
+			std::cout << "-----------------------------------" << std::endl;
+			std::cout << "Name: " << i.name << std::endl;
+			std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
+			std::cout << std::endl << "-----------------------------------" << std::endl;
+		}
 	}
 	std::cout << std::endl << "Total Price: " << std::fixed << std::setprecision(2) << order.totalprice;
 	std::cout << std::endl << "----------------------------------------" << std::endl;
@@ -802,7 +829,7 @@ void Config() {
 				std::ifstream f(i);
 				json data = json::parse(f);
 				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << double(data["price"]);
 				std::cout << std::endl << "-----------------------------------" << std::endl;
 				f.close();
 			}
@@ -821,7 +848,7 @@ void Config() {
 				std::ifstream f(i);
 				json data = json::parse(f);
 				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << double(data["price"]);
 				std::cout << std::endl << "-----------------------------------" << std::endl;
 				f.close();
 			}
@@ -840,7 +867,7 @@ void Config() {
 				std::ifstream f(i);
 				json data = json::parse(f);
 				std::cout << "Name: " << data["name"] << std::endl;
-				std::cout << "Price: " << std::fixed << std::setprecision(2) << data["price"];
+				std::cout << "Price: " << std::fixed << std::setprecision(2) << double(data["price"]);
 				std::cout << std::endl << "-----------------------------------" << std::endl;
 				f.close();
 			}
@@ -929,6 +956,11 @@ int main() {
 			std::cout << "Commands are CASE SENSITIVE\n----Commands----\nconfig - add or remove items from the menu\nclearUser - clear user data\nclearItems - clear all items\nreturn - return to the name menu";
 			name = "";
 			commands = true;
+			continue;
+		}
+		else if (name.contains("/")) {
+			std::cout << "Did you mean /command?";
+			name = "";
 			continue;
 		}
 

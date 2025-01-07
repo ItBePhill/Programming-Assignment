@@ -1,5 +1,5 @@
 //makes sure it cannot be declared twice in a source file.
-//with ifndef which checks if the headerfile is already defined and return a blank file is so.
+//with ifndef it checks if the header file is already defined and return a blank file is so.
 //otherwise just return the header file
 #ifndef ConfHeader_H
 #define ConfHeader_H
