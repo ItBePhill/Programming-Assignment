@@ -88,7 +88,7 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 	int answerInt;
 	while (true) {
 		std::cout << message << std::endl;
-		int x = 0;
+		int x = 1;
 		//loop over every choice and display it to the user;
 		for (auto i : choices) {
 			std::cout << x << " - " <<  i << std::endl;
@@ -102,7 +102,7 @@ int Option(std::vector<std::string> choices, std::string message = "What would y
 		//convert string answer to an integer for comparison
 		answerInt = strtol(answerString.c_str(), &notnum, 0);
 		//check if the answer was allowed, otherwise return the answer
-		if ((answerInt > choices.size() || answerInt < 0) && &notnum) {
+		if ((answerInt > choices.size()+1 || answerInt < 0) && &notnum) {
 			std::cout << std::endl << "Sorry that's not an option!" << std::endl;
 			continue;
 		}
@@ -532,7 +532,6 @@ void createOrder(User &user) {
 	//show the user what they ordered and how much it cost
 	system("cls");
 	std::cout << "--------------- Reciept ----------------" << std::endl; 
-	std::cout << "Total Price: " << order.totalprice << std::endl;
 
 	std::cout << std::endl << "-------- Potato --------" << std::endl;
 	std::cout << "-----------------------------------" << std::endl;
@@ -557,6 +556,8 @@ void createOrder(User &user) {
 		std::cout << "Price: " << std::fixed << std::setprecision(2) << i.price;
 		std::cout << std::endl << "-----------------------------------" << std::endl;
 	}
+	std::cout << std::endl << "Total Price: " << std::fixed << std::setprecision(2) << order.totalprice;
+	std::cout << std::endl << "----------------------------------------" << std::endl;
 
 	//user doesnt have enough credits so boot them back to the welcome menu
 	if (order.totalprice > user.credits) {
@@ -591,8 +592,7 @@ void viewRecent(User &user) {
 			if (i.type_name() != "number") {
 				order = CreateOrderFromJson(i);
 				//show the time the order was made, and use the same format as the reciept at the end of create order
-				std::cout << std:: endl << "---------------" << std::chrono::sys_seconds(std::chrono::seconds(order.time)) << "----------------" << std::endl;
-				std::cout << "Total Price: " << std::fixed << std::setprecision(2) << order.totalprice << std::endl;
+				std::cout << std:: endl << "---------------" << std::chrono::sys_seconds(std::chrono::seconds(order.time)) << "---------------" << std::endl;
 
 				std::cout << std::endl << "-------- Potato --------" << std::endl;
 				std::cout << "-----------------------------------" << std::endl;
@@ -617,6 +617,7 @@ void viewRecent(User &user) {
 					std::cout << "Price: " << std::fixed << std::setprecision(2) << j.price;
 					std::cout << std::endl << "-----------------------------------" << std::endl;
 				}
+				std::cout << std::endl <<  "Total Price: " << std::fixed << std::setprecision(2) << order.totalprice;
 				std::cout << std::endl << "--------------------------------------------------";
 			}
 			else {
@@ -672,20 +673,20 @@ void welcome(User user) {
 	//show the main welcome menu
 	switch (Option({"Add Credits", "Create Order", "View Recent Orders", "Quit"}, message)) {
 				//add credits
-			case 0:
+			case 1:
 				//set the user variable to what the function return as this contains the updated credits.
 				addCredits(user);
 				break;
 				//create an order
-			case 1:
+			case 2:
 				createOrder(user);
 				break;
 				//view recent orders
-			case 2:
+			case 3:
 				viewRecent(user);
 				break;
 				// quit
-			case 3:
+			case 4:
 				std::cout << std::endl << "Bye! " << user.name << ", Come Back Soon!" << std::endl;
 				quick_exit(0);
 			case -1:
@@ -709,11 +710,11 @@ void Config() {
 	//show options for add or editing or viewing items
 	switch (Option({ "Add or Edit an Item", "View Items" })) {
 	// add / edit
-	case 0:
+	case 1:
 		system("cls");
 		switch (Option({"Topping", "Extra", "Potato"}, "What is the type of item you want to add or edit?")) {
 		// Topping
-		case 0:
+		case 1:
 			itemtype = conf::topping;
 			//ask for name
 			std::cout << "What is the name of the item you would like to add or edit?\n- ";
@@ -735,7 +736,7 @@ void Config() {
 
 
 		
-		case 1:
+		case 2:
 			itemtype = conf::extra;
 			//ask for name
 			std::cout << "What is the name of the item you would like to add or edit?\n- ";
@@ -754,7 +755,7 @@ void Config() {
 			conf::Add(item, itemtype);
 			std::cout << std::endl << "Successfully Added / Edited Item" << std::endl;
 			break;
-		case 2:
+		case 3:
 			itemtype = conf::potato;
 			//ask for name
 			std::cout << "What is the name of the item you would like to add or edit?\n- ";
@@ -782,12 +783,12 @@ void Config() {
 
 
 	//view
-	case 1:
+	case 2:
 		system("cls");
 		//ask user which they want to view
 		switch (Option({ "Topping", "Extra", "Potato" }, "What type of items do you want to view?")) {
 		//topping
-		case 0:
+		case 1:
 			itemtype = conf::topping;
 			//get list of file paths
 			paths = conf::View(itemtype);
@@ -806,7 +807,7 @@ void Config() {
 			}
 			break;
 		//extra
-		case 1:
+		case 2:
 			itemtype = conf::extra;
 			//get list of file paths
 			paths = conf::View(itemtype);
@@ -825,7 +826,7 @@ void Config() {
 			}
 			break;
 		//potato
-		case 2:
+		case 3:
 			itemtype = conf::potato;
 			//get list of file paths
 			paths = conf::View(itemtype);
@@ -853,10 +854,10 @@ void Config() {
 
 	//ask user if they want to return to the config menu to choose add/edit or view
 	switch (Option({"Return to Config Menu", "Quit"}, "Would you like to return to the config menu or quit?")) {
-		case 0:
+		case 1:
 			Config();
 			break;
-		case 1:
+		case 2:
 			quick_exit(0);
 	}
 }
@@ -967,7 +968,6 @@ int main() {
 			continue;
 		}
 	}
-
 	//check if the user exists
 	if (!std::filesystem::exists(filename)) {
 		//user doesnt exist so create one

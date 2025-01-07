@@ -30,18 +30,15 @@ int conf::Add(Item item, conf::ItemType type) {
 	cout << endl;
 	switch (type) {
 	case conf::topping:
-		cout << "Topping";
 		jsonf = std::ofstream("config/toppings/"+item.name+".json");
 		break;
 
 	case conf::extra:
-		cout << "Extra";
 		jsonf = std::ofstream("config/extras/" + item.name + ".json");
 		break;
 
 	case conf::potato:
 		jsonf = std::ofstream("config/potatoes/" + item.name + ".json");
-		cout << "Potato";
 		break;
 	}
 	jsond["name"] = item.name;
